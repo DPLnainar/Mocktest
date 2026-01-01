@@ -88,7 +88,7 @@ public class Judge0Service {
                 .stdin(stdin)
                 .cpu_time_limit(5.0)
                 .wall_time_limit(10.0)
-                .memory_limit(256000)
+                .memory_limit(256000.0)
                 .callback_url(callbackUrl + "/" + executionId)
                 .wait(false) // Async mode
                 .base64_encoded(false)
@@ -193,7 +193,7 @@ public class Judge0Service {
                 .stdin(testInputs[i])
                 .cpu_time_limit(5.0)
                 .wall_time_limit(10.0)
-                .memory_limit(256000)
+                .memory_limit(256000.0)
                 .wait(true) // Sync mode for batch
                 .build();
         }

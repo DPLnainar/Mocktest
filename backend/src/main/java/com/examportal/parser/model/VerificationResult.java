@@ -28,7 +28,7 @@ public class VerificationResult {
     public static class Violation {
         private String type;
         private String message;
-        private int line;
+        private int lineNumber; // Changed from 'line' to match builder calls
         private String code;
         private Object rule; // VerificationRule object
     }

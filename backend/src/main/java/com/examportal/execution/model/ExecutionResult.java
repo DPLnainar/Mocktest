@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ExecutionResult {
     private String executionId; // Judge0 token/execution ID
+    private String submissionToken; // Alias for executionId
     private String output;
     private String error;
     private ExecutionStatus status; // Changed from String to Enum
@@ -18,6 +19,7 @@ public class ExecutionResult {
     private double memory;
     private String message;
     private boolean passed;
+    private java.time.LocalDateTime executedAt;
 
     // This was missing!
     public enum ExecutionStatus {
@@ -33,15 +35,15 @@ public class ExecutionResult {
     }
     
     public static ExecutionStatus fromJudge0Status(Integer statusId) {
-        if (statusId == null) return INTERNAL_ERROR;
+        if (statusId == null) return ExecutionStatus.INTERNAL_ERROR;
         return switch (statusId) {
-            case 1, 2 -> QUEUED;
-            case 3 -> ACCEPTED;
-            case 4 -> WRONG_ANSWER;
-            case 6 -> COMPILE_ERROR;
-            case 5, 7, 8, 9, 10, 11, 12 -> RUNTIME_ERROR;
-            case 13 -> INTERNAL_ERROR;
-            default -> INTERNAL_ERROR;
+            case 1, 2 -> ExecutionStatus.QUEUED;
+            case 3 -> ExecutionStatus.ACCEPTED;
+            case 4 -> ExecutionStatus.WRONG_ANSWER;
+            case 6 -> ExecutionStatus.COMPILE_ERROR;
+            case 5, 7, 8, 9, 10, 11, 12 -> ExecutionStatus.RUNTIME_ERROR;
+            case 13 -> ExecutionStatus.INTERNAL_ERROR;
+            default -> ExecutionStatus.INTERNAL_ERROR;
         };
     }
 }
