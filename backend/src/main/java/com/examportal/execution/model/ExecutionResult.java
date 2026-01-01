@@ -18,6 +18,7 @@ public class ExecutionResult {
     private Integer exitCode;
     private ExecutionStatus status; // Changed from String to Enum
     private double time;
+    private Long cpuTimeMs;
     private double memory;
     private String message;
     private boolean passed;
