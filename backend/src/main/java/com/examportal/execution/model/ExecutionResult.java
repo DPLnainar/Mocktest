@@ -14,6 +14,7 @@ public class ExecutionResult {
     private String submissionToken; // Alias for executionId
     private String output;
     private String error;
+    private String compileOutput;
     private ExecutionStatus status; // Changed from String to Enum
     private double time;
     private double memory;

@@ -30,6 +30,7 @@ public class VerificationResult {
         private String message;
         private int lineNumber; // Changed from 'line' to match builder calls
         private String code;
+        private String codeSnippet; // Alias for code
         private Object rule; // VerificationRule object
     }
 }

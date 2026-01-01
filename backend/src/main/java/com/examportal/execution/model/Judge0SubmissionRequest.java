@@ -17,4 +17,7 @@ public class Judge0SubmissionRequest {
     private Double cpu_time_limit;
     private Double wall_time_limit;
     private Double memory_limit;
+    private String callback_url;
+    private Boolean wait;
+    private Boolean base64_encoded;
 }
