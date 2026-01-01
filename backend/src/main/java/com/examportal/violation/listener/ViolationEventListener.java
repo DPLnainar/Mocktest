@@ -1,8 +1,6 @@
 package com.examportal.violation.listener;
 
 import com.examportal.violation.event.ViolationEvent;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -18,10 +16,9 @@ import org.springframework.stereotype.Component;
  * - ML model training data (future)
  */
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class ViolationEventListener {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ViolationEventListener.class);
     /**
      * Handle violation event asynchronously
      * Runs in separate thread pool to avoid blocking main flow

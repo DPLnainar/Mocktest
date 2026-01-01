@@ -5,8 +5,8 @@ import com.examportal.execution.model.ExecutionResult;
 import com.examportal.execution.model.Judge0SubmissionRequest;
 import com.examportal.execution.model.Judge0SubmissionResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -26,13 +26,19 @@ import java.util.concurrent.TimeUnit;
  * - Async execution with webhooks
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class Judge0Service {
+
+    private static final Logger log = LoggerFactory.getLogger(Judge0Service.class);
 
     private final Judge0Client judge0Client;
     private final StringRedisTemplate redisTemplate;
     private final ExecutionQueueService executionQueueService;
+
+    public Judge0Service(Judge0Client judge0Client, StringRedisTemplate redisTemplate, ExecutionQueueService executionQueueService) {
+        this.judge0Client = judge0Client;
+        this.redisTemplate = redisTemplate;
+        this.executionQueueService = executionQueueService;
+    }
 
     @Value("${judge0.api-key}")
     private String apiKey;

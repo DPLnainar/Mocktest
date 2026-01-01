@@ -4,8 +4,8 @@ import com.examportal.monitoring.dto.ModeratorConnectRequest;
 import com.examportal.monitoring.dto.ModeratorTerminateRequest;
 import com.examportal.monitoring.dto.ModeratorWarningRequest;
 import com.examportal.monitoring.service.ModeratorMonitoringService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -20,11 +20,15 @@ import java.security.Principal;
  * Handles moderator connections, terminations, and warnings
  */
 @Controller
-@RequiredArgsConstructor
-@Slf4j
 public class ModeratorWebSocketController {
 
+    private static final Logger log = LoggerFactory.getLogger(ModeratorWebSocketController.class);
+
     private final ModeratorMonitoringService moderatorService;
+
+    public ModeratorWebSocketController(ModeratorMonitoringService moderatorService) {
+        this.moderatorService = moderatorService;
+    }
 
     /**
      * Moderator connects to exam

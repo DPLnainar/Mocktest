@@ -7,8 +7,8 @@ import com.examportal.monitoring.service.SessionManagerService;
 import com.examportal.violation.entity.Violation;
 import com.examportal.violation.event.ViolationEvent;
 import com.examportal.violation.repository.ViolationRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -35,15 +35,27 @@ import java.util.concurrent.TimeUnit;
  * If phone + tab switch detected at exact same millisecond, both count as strikes
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class ViolationService {
+
+    private static final Logger log = LoggerFactory.getLogger(ViolationService.class);
 
     private final ViolationRepository violationRepository;
     private final StringRedisTemplate redisTemplate;
     private final SessionManagerService sessionManager;
     private final MonitoringBroadcastService broadcastService;
     private final ApplicationEventPublisher eventPublisher;
+
+    public ViolationService(ViolationRepository violationRepository, 
+                            StringRedisTemplate redisTemplate, 
+                            SessionManagerService sessionManager, 
+                            MonitoringBroadcastService broadcastService, 
+                            ApplicationEventPublisher eventPublisher) {
+        this.violationRepository = violationRepository;
+        this.redisTemplate = redisTemplate;
+        this.sessionManager = sessionManager;
+        this.broadcastService = broadcastService;
+        this.eventPublisher = eventPublisher;
+    }
 
     @Value("${violation.max-strikes:5}")
     private int maxStrikes;

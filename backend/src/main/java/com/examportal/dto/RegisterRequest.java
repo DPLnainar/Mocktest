@@ -3,16 +3,10 @@ package com.examportal.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Registration Request DTO
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class RegisterRequest {
 
     @NotBlank(message = "Email is required")
@@ -34,4 +28,28 @@ public class RegisterRequest {
 
     @NotBlank(message = "Role is required")
     private String role; // STUDENT, MODERATOR
+
+    public RegisterRequest() {}
+
+    public RegisterRequest(String email, String password, String fullName, String department, String rollNumber, String role) {
+        this.email = email;
+        this.password = password;
+        this.fullName = fullName;
+        this.department = department;
+        this.rollNumber = rollNumber;
+        this.role = role;
+    }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getDepartment() { return department; }
+    public void setDepartment(String department) { this.department = department; }
+    public String getRollNumber() { return rollNumber; }
+    public void setRollNumber(String rollNumber) { this.rollNumber = rollNumber; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

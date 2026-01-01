@@ -1,10 +1,5 @@
 package com.examportal.violation.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 /**
@@ -12,10 +7,6 @@ import java.time.LocalDateTime;
  * 
  * Includes cursor for next page
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class KeysetPageResponse<T> {
     
     private T content;
@@ -28,11 +19,22 @@ public class KeysetPageResponse<T> {
                                                 LocalDateTime nextCursor, 
                                                 boolean hasNext, 
                                                 int pageSize) {
-        return KeysetPageResponse.<T>builder()
-                .content(content)
-                .nextCursor(nextCursor)
-                .hasNext(hasNext)
-                .pageSize(pageSize)
-                .build();
+        KeysetPageResponse<T> response = new KeysetPageResponse<>();
+        response.setContent(content);
+        response.setNextCursor(nextCursor);
+        response.setHasNext(hasNext);
+        response.setPageSize(pageSize);
+        return response;
     }
+
+    public T getContent() { return content; }
+    public void setContent(T content) { this.content = content; }
+    public LocalDateTime getNextCursor() { return nextCursor; }
+    public void setNextCursor(LocalDateTime nextCursor) { this.nextCursor = nextCursor; }
+    public boolean isHasNext() { return hasNext; }
+    public void setHasNext(boolean hasNext) { this.hasNext = hasNext; }
+    public int getPageSize() { return pageSize; }
+    public void setPageSize(int pageSize) { this.pageSize = pageSize; }
+    public long getTotalElements() { return totalElements; }
+    public void setTotalElements(long totalElements) { this.totalElements = totalElements; }
 }

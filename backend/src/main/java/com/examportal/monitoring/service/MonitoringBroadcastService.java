@@ -1,8 +1,6 @@
 package com.examportal.monitoring.service;
 
 import com.examportal.monitoring.model.StudentStatus;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +15,14 @@ import java.util.List;
  * Target: <1s latency from event to moderator screen
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class MonitoringBroadcastService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MonitoringBroadcastService.class);
     private final SimpMessagingTemplate messagingTemplate;
+
+    public MonitoringBroadcastService(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
 
     /**
      * Broadcast student status to exam monitoring channel

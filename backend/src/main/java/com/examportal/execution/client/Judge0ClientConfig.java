@@ -3,7 +3,6 @@ package com.examportal.execution.client;
 import feign.Logger;
 import feign.Request;
 import feign.codec.ErrorDecoder;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,8 +14,9 @@ import java.util.concurrent.TimeUnit;
  * Configures Feign client for Judge0 API communication
  */
 @Configuration
-@Slf4j
 public class Judge0ClientConfig {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Judge0ClientConfig.class);
 
     @Bean
     public Logger.Level feignLoggerLevel() {

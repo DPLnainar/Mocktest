@@ -1,7 +1,6 @@
 package com.examportal.violation.event;
 
 import com.examportal.violation.entity.Violation;
-import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.Map;
@@ -12,7 +11,6 @@ import java.util.Map;
  * Published when a violation is detected
  * Triggers async processing, broadcasting, and auto-termination check
  */
-@Getter
 public class ViolationEvent extends ApplicationEvent {
 
     private final Long sessionId;
@@ -35,4 +33,12 @@ public class ViolationEvent extends ApplicationEvent {
         this.description = description;
         this.evidence = evidence;
     }
+
+    public Long getSessionId() { return sessionId; }
+    public Long getStudentId() { return studentId; }
+    public Long getExamId() { return examId; }
+    public Violation.ViolationType getType() { return type; }
+    public Violation.Severity getSeverity() { return severity; }
+    public String getDescription() { return description; }
+    public Map<String, Object> getEvidence() { return evidence; }
 }

@@ -3,7 +3,8 @@ package com.examportal.parser.service.impl;
 import com.examportal.parser.model.VerificationResult;
 import com.examportal.parser.model.VerificationRule;
 import com.examportal.parser.service.ParserService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,17 +23,17 @@ import java.util.regex.Pattern;
  * - Specific function calls
  */
 @Service
-@Slf4j
 public class PythonParserService implements ParserService {
+
+    private static final Logger log = LoggerFactory.getLogger(PythonParserService.class);
 
     @Override
     public VerificationResult verifyCode(String code, List<VerificationRule> rules) {
         long startTime = System.currentTimeMillis();
 
-        VerificationResult result = VerificationResult.builder()
-                .passed(true)
-                .violations(new ArrayList<>())
-                .build();
+        VerificationResult result = new VerificationResult();
+        result.setPassed(true);
+        result.setViolations(new ArrayList<>());
 
         // Check for syntax errors first
         if (hasSyntaxErrors(code)) {

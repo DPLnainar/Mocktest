@@ -1,10 +1,5 @@
 package com.examportal.parser.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
  * Verification Rule
  * 
@@ -15,10 +10,6 @@ import lombok.NoArgsConstructor;
  * - REQUIRED: "recursion" when question mandates recursive solution
  * - FORBIDDEN: "for loop" when question requires streams
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class VerificationRule {
 
     /**
@@ -40,6 +31,24 @@ public class VerificationRule {
      * Error message to show if rule is violated
      */
     private String errorMessage;
+
+    public VerificationRule() {}
+
+    public VerificationRule(RuleType type, String construct, String description, String errorMessage) {
+        this.type = type;
+        this.construct = construct;
+        this.description = description;
+        this.errorMessage = errorMessage;
+    }
+
+    public RuleType getType() { return type; }
+    public void setType(RuleType type) { this.type = type; }
+    public String getConstruct() { return construct; }
+    public void setConstruct(String construct) { this.construct = construct; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getErrorMessage() { return errorMessage; }
+    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 
     public enum RuleType {
         FORBIDDEN,  // Construct must NOT be present

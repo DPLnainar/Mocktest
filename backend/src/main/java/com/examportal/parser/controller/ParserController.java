@@ -5,11 +5,8 @@ import com.examportal.parser.model.VerificationRule;
 import com.examportal.parser.service.ParserFactory;
 import com.examportal.parser.service.ParserService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +21,15 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/parser")
-@RequiredArgsConstructor
-@Slf4j
 public class ParserController {
 
+    private static final Logger log = LoggerFactory.getLogger(ParserController.class);
+
     private final ParserFactory parserFactory;
+
+    public ParserController(ParserFactory parserFactory) {
+        this.parserFactory = parserFactory;
+    }
 
     /**
      * Verify code against rules
@@ -87,28 +88,55 @@ public class ParserController {
         return ResponseEntity.ok(List.of("JAVA", "PYTHON"));
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class VerifyRequest {
         private String code;
         private String language;
         private List<VerificationRule> rules;
+
+        public VerifyRequest() {}
+        public VerifyRequest(String code, String language, List<VerificationRule> rules) {
+            this.code = code;
+            this.language = language;
+            this.rules = rules;
+        }
+
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+        public String getLanguage() { return language; }
+        public void setLanguage(String language) { this.language = language; }
+        public List<VerificationRule> getRules() { return rules; }
+        public void setRules(List<VerificationRule> rules) { this.rules = rules; }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class SyntaxCheckRequest {
         private String code;
         private String language;
+
+        public SyntaxCheckRequest() {}
+        public SyntaxCheckRequest(String code, String language) {
+            this.code = code;
+            this.language = language;
+        }
+
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+        public String getLanguage() { return language; }
+        public void setLanguage(String language) { this.language = language; }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class SyntaxCheckResponse {
         private boolean hasErrors;
         private String message;
+
+        public SyntaxCheckResponse() {}
+        public SyntaxCheckResponse(boolean hasErrors, String message) {
+            this.hasErrors = hasErrors;
+            this.message = message;
+        }
+
+        public boolean isHasErrors() { return hasErrors; }
+        public void setHasErrors(boolean hasErrors) { this.hasErrors = hasErrors; }
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
     }
 }

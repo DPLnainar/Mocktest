@@ -2,8 +2,6 @@ package com.examportal.violation.service;
 
 import com.examportal.violation.entity.Violation;
 import com.examportal.violation.repository.OptimizedViolationRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,11 +18,14 @@ import java.util.List;
  * Reduces N+1 queries with proper repository methods
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class OptimizedViolationQueryService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OptimizedViolationQueryService.class);
     private final OptimizedViolationRepository violationRepository;
+
+    public OptimizedViolationQueryService(OptimizedViolationRepository violationRepository) {
+        this.violationRepository = violationRepository;
+    }
 
     /**
      * Get violations with keyset pagination

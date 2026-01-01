@@ -1,10 +1,6 @@
 package com.examportal.violation.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
@@ -26,10 +22,6 @@ import java.util.Map;
     @Index(name = "idx_violation_exam", columnList = "exam_id, detected_at")
 })
 @EntityListeners(AuditingEntityListener.class)
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Violation {
 
     @Id
@@ -153,4 +145,27 @@ public class Violation {
             this.strikeCount = severity.getStrikeCount();
         }
     }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Long getSessionId() { return sessionId; }
+    public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
+    public Long getStudentId() { return studentId; }
+    public void setStudentId(Long studentId) { this.studentId = studentId; }
+    public Long getExamId() { return examId; }
+    public void setExamId(Long examId) { this.examId = examId; }
+    public ViolationType getType() { return type; }
+    public void setType(ViolationType type) { this.type = type; }
+    public Severity getSeverity() { return severity; }
+    public void setSeverity(Severity severity) { this.severity = severity; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public java.util.Map<String, Object> getEvidence() { return evidence; }
+    public void setEvidence(java.util.Map<String, Object> evidence) { this.evidence = evidence; }
+    public Boolean getConfirmed() { return confirmed; }
+    public void setConfirmed(Boolean confirmed) { this.confirmed = confirmed; }
+    public java.time.LocalDateTime getDetectedAt() { return detectedAt; }
+    public void setDetectedAt(java.time.LocalDateTime detectedAt) { this.detectedAt = detectedAt; }
+    public Integer getStrikeCount() { return strikeCount; }
+    public void setStrikeCount(Integer strikeCount) { this.strikeCount = strikeCount; }
 }

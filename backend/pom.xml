@@ -22,7 +22,6 @@
         <java.version>17</java.version>
         <antlr.version>4.13.1</antlr.version>
         <resilience4j.version>2.1.0</resilience4j.version>
-        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <dependencies>
@@ -123,14 +122,6 @@
             <version>4.1.0</version>
         </dependency>
 
-        <!-- Lombok for boilerplate reduction -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <optional>true</optional>
-        </dependency>
-
         <!-- Apache Commons Pool2 for parser pooling -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -167,14 +158,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
 
             <!-- ANTLR 4 Maven Plugin -->

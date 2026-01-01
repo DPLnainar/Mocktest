@@ -1,8 +1,8 @@
 package com.examportal.violation.service;
 
 import com.examportal.violation.dto.EnhancedViolationRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +15,15 @@ import java.util.concurrent.TimeUnit;
  * Filters out low-confidence and non-consecutive detections
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class FalsePositiveFilterService {
 
+    private static final Logger log = LoggerFactory.getLogger(FalsePositiveFilterService.class);
+
     private final StringRedisTemplate redisTemplate;
+
+    public FalsePositiveFilterService(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String CONSECUTIVE_FRAME_PREFIX = "exam:consecutive:";
     private static final int MIN_CONSECUTIVE_FRAMES = 3;

@@ -1,10 +1,5 @@
 package com.examportal.execution.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 /**
@@ -13,10 +8,6 @@ import java.time.LocalDateTime;
  * Internal representation of code execution results
  * Used for storing in database and returning to frontend
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class ExecutionResult {
 
     /**
@@ -48,6 +39,54 @@ public class ExecutionResult {
      * Compilation errors
      */
     private String compileOutput;
+
+    /**
+     * Execution time (seconds)
+     */
+    private Double time;
+
+    /**
+     * Memory usage (KB)
+     */
+    private Integer memory;
+
+    /**
+     * When execution was completed
+     */
+    private LocalDateTime completedAt;
+
+    public ExecutionResult() {}
+
+    public ExecutionResult(String executionId, String submissionToken, ExecutionStatus status, String output, String error, String compileOutput, Double time, Integer memory, LocalDateTime completedAt) {
+        this.executionId = executionId;
+        this.submissionToken = submissionToken;
+        this.status = status;
+        this.output = output;
+        this.error = error;
+        this.compileOutput = compileOutput;
+        this.time = time;
+        this.memory = memory;
+        this.completedAt = completedAt;
+    }
+
+    public String getExecutionId() { return executionId; }
+    public void setExecutionId(String executionId) { this.executionId = executionId; }
+    public String getSubmissionToken() { return submissionToken; }
+    public void setSubmissionToken(String submissionToken) { this.submissionToken = submissionToken; }
+    public ExecutionStatus getStatus() { return status; }
+    public void setStatus(ExecutionStatus status) { this.status = status; }
+    public String getOutput() { return output; }
+    public void setOutput(String output) { this.output = output; }
+    public String getError() { return error; }
+    public void setError(String error) { this.error = error; }
+    public String getCompileOutput() { return compileOutput; }
+    public void setCompileOutput(String compileOutput) { this.compileOutput = compileOutput; }
+    public Double getTime() { return time; }
+    public void setTime(Double time) { this.time = time; }
+    public Integer getMemory() { return memory; }
+    public void setMemory(Integer memory) { this.memory = memory; }
+    public LocalDateTime getCompletedAt() { return completedAt; }
+    public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
 
     /**
      * Exit code

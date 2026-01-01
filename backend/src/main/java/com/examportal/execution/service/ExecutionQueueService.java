@@ -1,7 +1,7 @@
 package com.examportal.execution.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +14,15 @@ import java.util.concurrent.TimeUnit;
  * Tracks submission tokens and student IDs for result polling
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class ExecutionQueueService {
 
+    private static final Logger log = LoggerFactory.getLogger(ExecutionQueueService.class);
+
     private final StringRedisTemplate redisTemplate;
+
+    public ExecutionQueueService(StringRedisTemplate redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String QUEUE_PREFIX = "execution:queue:";
     private static final String TOKEN_PREFIX = "execution:token:";

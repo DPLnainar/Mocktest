@@ -4,8 +4,6 @@ import com.examportal.security.CustomUserDetails;
 import com.examportal.violation.dto.KeysetPageResponse;
 import com.examportal.violation.entity.Violation;
 import com.examportal.violation.service.OptimizedViolationQueryService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -23,11 +21,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/violations/optimized")
-@RequiredArgsConstructor
-@Slf4j
 public class OptimizedViolationController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OptimizedViolationController.class);
     private final OptimizedViolationQueryService queryService;
+
+    public OptimizedViolationController(OptimizedViolationQueryService queryService) {
+        this.queryService = queryService;
+    }
 
     /**
      * Get session violations with keyset pagination
@@ -153,7 +154,7 @@ public class OptimizedViolationController {
     @PostMapping("/batch-confirm")
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     public ResponseEntity<Void> batchConfirmViolations(@RequestBody BatchConfirmRequest request) {
-        queryService.batchConfirmViolations(request.violationIds(), request.confirmed());
+        queryService.batchConfirmViolations(request.getViolationIds(), request.isConfirmed());
         return ResponseEntity.ok().build();
     }
 
@@ -199,5 +200,19 @@ public class OptimizedViolationController {
     }
 
     // DTO for batch operations
-    record BatchConfirmRequest(List<Long> violationIds, boolean confirmed) {}
+    public static class BatchConfirmRequest {
+        private List<Long> violationIds;
+        private boolean confirmed;
+
+        public BatchConfirmRequest() {}
+        public BatchConfirmRequest(List<Long> violationIds, boolean confirmed) {
+            this.violationIds = violationIds;
+            this.confirmed = confirmed;
+        }
+
+        public List<Long> getViolationIds() { return violationIds; }
+        public void setViolationIds(List<Long> violationIds) { this.violationIds = violationIds; }
+        public boolean isConfirmed() { return confirmed; }
+        public void setConfirmed(boolean confirmed) { this.confirmed = confirmed; }
+    }
 }

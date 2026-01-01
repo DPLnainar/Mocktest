@@ -5,11 +5,8 @@ import com.examportal.monitoring.model.StudentStatus;
 import com.examportal.monitoring.service.MonitoringBroadcastService;
 import com.examportal.monitoring.service.SessionManagerService;
 import com.examportal.security.CustomUserDetails;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -30,12 +27,17 @@ import java.time.LocalDateTime;
  * Private messages go to /user/.../queue/... (user prefix)
  */
 @Controller
-@RequiredArgsConstructor
-@Slf4j
 public class MonitoringWebSocketController {
+
+    private static final Logger log = LoggerFactory.getLogger(MonitoringWebSocketController.class);
 
     private final SessionManagerService sessionManager;
     private final MonitoringBroadcastService broadcastService;
+
+    public MonitoringWebSocketController(SessionManagerService sessionManager, MonitoringBroadcastService broadcastService) {
+        this.sessionManager = sessionManager;
+        this.broadcastService = broadcastService;
+    }
 
     /**
      * Student connects to exam session
@@ -195,13 +197,12 @@ public class MonitoringWebSocketController {
         broadcastService.broadcastTermination(examId, request.getStudentId(), request.getReason());
 
         // Broadcast updated status
-        StudentStatus status = StudentStatus.builder()
-                .studentId(request.getStudentId())
-                .sessionId(request.getSessionId())
-                .activityStatus(StudentStatus.ActivityStatus.TERMINATED)
-                .statusColor(StudentStatus.StatusColor.RED)
-                .lastActivity(LocalDateTime.now())
-                .build();
+        StudentStatus status = new StudentStatus();
+        status.setStudentId(request.getStudentId());
+        status.setSessionId(request.getSessionId());
+        status.setActivityStatus(StudentStatus.ActivityStatus.TERMINATED);
+        status.setStatusColor(StudentStatus.StatusColor.RED);
+        status.setLastActivity(LocalDateTime.now());
 
         broadcastService.broadcastStudentStatus(examId, status);
     }
@@ -210,72 +211,138 @@ public class MonitoringWebSocketController {
      * Convert ExamSession to StudentStatus
      */
     private StudentStatus convertToStudentStatus(ExamSession session) {
-        return StudentStatus.builder()
-                .studentId(session.getStudentId())
-                .studentName(session.getStudentName())
-                .sessionId(session.getId())
-                .connectionStatus(session.isHeartbeatStale() ? 
-                        StudentStatus.ConnectionStatus.OFFLINE : 
-                        StudentStatus.ConnectionStatus.ONLINE)
-                .activityStatus(StudentStatus.ActivityStatus.IDLE)
-                .violationCount(session.getViolationCount())
-                .statusColor(StudentStatus.calculateStatusColor(session.getViolationCount()))
-                .lastActivity(session.getLastHeartbeat())
-                .build();
+        StudentStatus status = new StudentStatus();
+        status.setStudentId(session.getStudentId());
+        status.setStudentName(session.getStudentName());
+        status.setSessionId(session.getId());
+        status.setConnectionStatus(session.isHeartbeatStale() ? 
+                StudentStatus.ConnectionStatus.OFFLINE : 
+                StudentStatus.ConnectionStatus.ONLINE);
+        status.setActivityStatus(StudentStatus.ActivityStatus.IDLE);
+        status.setViolationCount(session.getViolationCount());
+        status.setStatusColor(StudentStatus.calculateStatusColor(session.getViolationCount()));
+        status.setLastActivity(session.getLastHeartbeat());
+        return status;
     }
 
     // Message DTOs
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class ConnectMessage {
         private Long studentId;
         private String studentName;
         private Long sessionId;
+
+        public ConnectMessage() {}
+        public ConnectMessage(Long studentId, String studentName, Long sessionId) {
+            this.studentId = studentId;
+            this.studentName = studentName;
+            this.sessionId = sessionId;
+        }
+
+        public Long getStudentId() { return studentId; }
+        public void setStudentId(Long studentId) { this.studentId = studentId; }
+        public String getStudentName() { return studentName; }
+        public void setStudentName(String studentName) { this.studentName = studentName; }
+        public Long getSessionId() { return sessionId; }
+        public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class DisconnectMessage {
         private Long studentId;
         private Long sessionId;
+
+        public DisconnectMessage() {}
+        public DisconnectMessage(Long studentId, Long sessionId) {
+            this.studentId = studentId;
+            this.sessionId = sessionId;
+        }
+
+        public Long getStudentId() { return studentId; }
+        public void setStudentId(Long studentId) { this.studentId = studentId; }
+        public Long getSessionId() { return sessionId; }
+        public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class HeartbeatMessage {
         private Long studentId;
         private Long sessionId;
         private StudentStatus.ActivityStatus activityStatus;
         private Integer currentQuestion;
+
+        public HeartbeatMessage() {}
+        public HeartbeatMessage(Long studentId, Long sessionId, StudentStatus.ActivityStatus activityStatus, Integer currentQuestion) {
+            this.studentId = studentId;
+            this.sessionId = sessionId;
+            this.activityStatus = activityStatus;
+            this.currentQuestion = currentQuestion;
+        }
+
+        public Long getStudentId() { return studentId; }
+        public void setStudentId(Long studentId) { this.studentId = studentId; }
+        public Long getSessionId() { return sessionId; }
+        public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
+        public StudentStatus.ActivityStatus getActivityStatus() { return activityStatus; }
+        public void setActivityStatus(StudentStatus.ActivityStatus activityStatus) { this.activityStatus = activityStatus; }
+        public Integer getCurrentQuestion() { return currentQuestion; }
+        public void setCurrentQuestion(Integer currentQuestion) { this.currentQuestion = currentQuestion; }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class ActivityMessage {
         private Long studentId;
         private Long sessionId;
         private StudentStatus.ActivityStatus activityType;
         private Integer currentQuestion;
+
+        public ActivityMessage() {}
+        public ActivityMessage(Long studentId, Long sessionId, StudentStatus.ActivityStatus activityType, Integer currentQuestion) {
+            this.studentId = studentId;
+            this.sessionId = sessionId;
+            this.activityType = activityType;
+            this.currentQuestion = currentQuestion;
+        }
+
+        public Long getStudentId() { return studentId; }
+        public void setStudentId(Long studentId) { this.studentId = studentId; }
+        public Long getSessionId() { return sessionId; }
+        public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
+        public StudentStatus.ActivityStatus getActivityType() { return activityType; }
+        public void setActivityType(StudentStatus.ActivityStatus activityType) { this.activityType = activityType; }
+        public Integer getCurrentQuestion() { return currentQuestion; }
+        public void setCurrentQuestion(Integer currentQuestion) { this.currentQuestion = currentQuestion; }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class TerminationRequest {
         private Long studentId;
         private Long sessionId;
         private String reason;
+
+        public TerminationRequest() {}
+        public TerminationRequest(Long studentId, Long sessionId, String reason) {
+            this.studentId = studentId;
+            this.sessionId = sessionId;
+            this.reason = reason;
+        }
+
+        public Long getStudentId() { return studentId; }
+        public void setStudentId(Long studentId) { this.studentId = studentId; }
+        public Long getSessionId() { return sessionId; }
+        public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
+        public String getReason() { return reason; }
+        public void setReason(String reason) { this.reason = reason; }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class TerminationNotice {
         private String reason;
         private LocalDateTime terminatedAt;
+
+        public TerminationNotice() {}
+        public TerminationNotice(String reason, LocalDateTime terminatedAt) {
+            this.reason = reason;
+            this.terminatedAt = terminatedAt;
+        }
+
+        public String getReason() { return reason; }
+        public void setReason(String reason) { this.reason = reason; }
+        public LocalDateTime getTerminatedAt() { return terminatedAt; }
+        public void setTerminatedAt(LocalDateTime terminatedAt) { this.terminatedAt = terminatedAt; }
     }
 }

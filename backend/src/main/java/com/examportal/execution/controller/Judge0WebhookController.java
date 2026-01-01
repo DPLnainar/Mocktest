@@ -2,8 +2,6 @@ package com.examportal.execution.controller;
 
 import com.examportal.execution.model.Judge0SubmissionResponse;
 import com.examportal.execution.service.ExecutionQueueService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +16,16 @@ import java.util.concurrent.TimeUnit;
  */
 @RestController
 @RequestMapping("/api/judge0/callback")
-@RequiredArgsConstructor
-@Slf4j
 public class Judge0WebhookController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Judge0WebhookController.class);
     private final RedisTemplate<String, Object> redisTemplate;
     private final ExecutionQueueService executionQueueService;
+
+    public Judge0WebhookController(RedisTemplate<String, Object> redisTemplate, ExecutionQueueService executionQueueService) {
+        this.redisTemplate = redisTemplate;
+        this.executionQueueService = executionQueueService;
+    }
 
     /**
      * Receive Judge0 callback

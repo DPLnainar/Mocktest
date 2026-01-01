@@ -1,8 +1,6 @@
 package com.examportal.monitoring.service;
 
 import com.examportal.monitoring.model.ExamSession;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -23,11 +21,14 @@ import java.util.stream.Collectors;
  * - Heartbeat mechanism detects disconnections
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class SessionManagerService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SessionManagerService.class);
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public SessionManagerService(RedisTemplate<String, Object> redisTemplate) {
+        this.redisTemplate = redisTemplate;
+    }
 
     private static final String SESSION_PREFIX = "exam:session:";
     private static final String WEBSOCKET_PREFIX = "websocket:session:";
@@ -80,21 +81,21 @@ public class SessionManagerService {
         }
 
         try {
-            return ExamSession.builder()
-                .id(sessionId)
-                .studentId((Long) redisTemplate.opsForHash().get(sessionKey, "studentId"))
-                .examId((Long) redisTemplate.opsForHash().get(sessionKey, "examId"))
-                .examTitle((String) redisTemplate.opsForHash().get(sessionKey, "examTitle"))
-                .studentName((String) redisTemplate.opsForHash().get(sessionKey, "studentName"))
-                .department((String) redisTemplate.opsForHash().get(sessionKey, "department"))
-                .status(ExamSession.SessionStatus.valueOf(
-                    (String) redisTemplate.opsForHash().get(sessionKey, "status")))
-                .violationCount((Integer) redisTemplate.opsForHash().get(sessionKey, "violationCount"))
-                .startedAt(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "startedAt")))
-                .expiresAt(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "expiresAt")))
-                .webSocketSessionId((String) redisTemplate.opsForHash().get(sessionKey, "webSocketSessionId"))
-                .lastHeartbeat(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "lastHeartbeat")))
-                .build();
+            ExamSession session = new ExamSession();
+            session.setId(sessionId);
+            session.setStudentId((Long) redisTemplate.opsForHash().get(sessionKey, "studentId"));
+            session.setExamId((Long) redisTemplate.opsForHash().get(sessionKey, "examId"));
+            session.setExamTitle((String) redisTemplate.opsForHash().get(sessionKey, "examTitle"));
+            session.setStudentName((String) redisTemplate.opsForHash().get(sessionKey, "studentName"));
+            session.setDepartment((String) redisTemplate.opsForHash().get(sessionKey, "department"));
+            session.setStatus(ExamSession.SessionStatus.valueOf(
+                (String) redisTemplate.opsForHash().get(sessionKey, "status")));
+            session.setViolationCount((Integer) redisTemplate.opsForHash().get(sessionKey, "violationCount"));
+            session.setStartedAt(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "startedAt")));
+            session.setExpiresAt(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "expiresAt")));
+            session.setWebSocketSessionId((String) redisTemplate.opsForHash().get(sessionKey, "webSocketSessionId"));
+            session.setLastHeartbeat(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "lastHeartbeat")));
+            return session;
         } catch (Exception e) {
             log.error("Error parsing session data", e);
             return null;

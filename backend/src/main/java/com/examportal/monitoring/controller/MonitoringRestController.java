@@ -6,8 +6,8 @@ import com.examportal.monitoring.service.MonitoringBroadcastService;
 import com.examportal.monitoring.service.SessionManagerService;
 import com.examportal.security.CustomUserDetails;
 import com.examportal.security.DepartmentSecurityService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,13 +24,21 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/monitoring")
-@RequiredArgsConstructor
-@Slf4j
 public class MonitoringRestController {
+
+    private static final Logger log = LoggerFactory.getLogger(MonitoringRestController.class);
 
     private final SessionManagerService sessionManager;
     private final MonitoringBroadcastService broadcastService;
     private final DepartmentSecurityService securityService;
+
+    public MonitoringRestController(SessionManagerService sessionManager, 
+                                    MonitoringBroadcastService broadcastService, 
+                                    DepartmentSecurityService securityService) {
+        this.sessionManager = sessionManager;
+        this.broadcastService = broadcastService;
+        this.securityService = securityService;
+    }
 
     /**
      * Get all active sessions for an exam
@@ -148,23 +156,23 @@ public class MonitoringRestController {
     }
 
     private StudentStatus convertToStudentStatus(ExamSession session) {
-        return StudentStatus.builder()
-                .studentId(session.getStudentId())
-                .studentName(session.getStudentName())
-                .email(null) // Can add if needed
-                .sessionId(session.getId())
-                .connectionStatus(session.isHeartbeatStale() ? 
-                        StudentStatus.ConnectionStatus.OFFLINE : 
-                        StudentStatus.ConnectionStatus.ONLINE)
-                .activityStatus(StudentStatus.ActivityStatus.IDLE)
-                .violationCount(session.getViolationCount())
-                .statusColor(StudentStatus.calculateStatusColor(session.getViolationCount()))
-                .lastActivity(session.getLastHeartbeat())
-                .currentQuestion(null)
-                .completedQuestions(null)
-                .cameraStatus(StudentStatus.CameraStatus.ACTIVE)
-                .tabSwitchCount(0)
-                .build();
+        StudentStatus status = new StudentStatus();
+        status.setStudentId(session.getStudentId());
+        status.setStudentName(session.getStudentName());
+        status.setEmail(null);
+        status.setSessionId(session.getId());
+        status.setConnectionStatus(session.isHeartbeatStale() ? 
+                StudentStatus.ConnectionStatus.OFFLINE : 
+                StudentStatus.ConnectionStatus.ONLINE);
+        status.setActivityStatus(StudentStatus.ActivityStatus.IDLE);
+        status.setViolationCount(session.getViolationCount());
+        status.setStatusColor(StudentStatus.calculateStatusColor(session.getViolationCount()));
+        status.setLastActivity(session.getLastHeartbeat());
+        status.setCurrentQuestion(null);
+        status.setCompletedQuestions(null);
+        status.setCameraStatus(StudentStatus.CameraStatus.ACTIVE);
+        status.setTabSwitchCount(0);
+        return status;
     }
 
     // DTOs

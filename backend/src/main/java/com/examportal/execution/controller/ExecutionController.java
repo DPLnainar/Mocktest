@@ -3,11 +3,6 @@ package com.examportal.execution.controller;
 import com.examportal.execution.model.ExecutionResult;
 import com.examportal.execution.service.Judge0Service;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,11 +17,14 @@ import com.examportal.security.CustomUserDetails;
  */
 @RestController
 @RequestMapping("/api/execution")
-@RequiredArgsConstructor
-@Slf4j
 public class ExecutionController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ExecutionController.class);
     private final Judge0Service judge0Service;
+
+    public ExecutionController(Judge0Service judge0Service) {
+        this.judge0Service = judge0Service;
+    }
 
     /**
      * Execute code
@@ -88,21 +86,43 @@ public class ExecutionController {
         return ResponseEntity.ok(results);
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class ExecutionRequest {
         private String code;
         private Integer languageId; // Judge0 language ID
         private String stdin;
+
+        public ExecutionRequest() {}
+        public ExecutionRequest(String code, Integer languageId, String stdin) {
+            this.code = code;
+            this.languageId = languageId;
+            this.stdin = stdin;
+        }
+
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+        public Integer getLanguageId() { return languageId; }
+        public void setLanguageId(Integer languageId) { this.languageId = languageId; }
+        public String getStdin() { return stdin; }
+        public void setStdin(String stdin) { this.stdin = stdin; }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class BatchExecutionRequest {
         private String code;
         private Integer languageId;
         private String[] testInputs;
+
+        public BatchExecutionRequest() {}
+        public BatchExecutionRequest(String code, Integer languageId, String[] testInputs) {
+            this.code = code;
+            this.languageId = languageId;
+            this.testInputs = testInputs;
+        }
+
+        public String getCode() { return code; }
+        public void setCode(String code) { this.code = code; }
+        public Integer getLanguageId() { return languageId; }
+        public void setLanguageId(Integer languageId) { this.languageId = languageId; }
+        public String[] getTestInputs() { return testInputs; }
+        public void setTestInputs(String[] testInputs) { this.testInputs = testInputs; }
     }
 }

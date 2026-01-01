@@ -2,7 +2,6 @@ package com.examportal.parser.service;
 
 import com.examportal.parser.service.impl.JavaParserService;
 import com.examportal.parser.service.impl.PythonParserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,11 +11,15 @@ import org.springframework.stereotype.Component;
  * Strategy pattern for multi-language support
  */
 @Component
-@RequiredArgsConstructor
 public class ParserFactory {
 
     private final JavaParserService javaParserService;
     private final PythonParserService pythonParserService;
+
+    public ParserFactory(JavaParserService javaParserService, PythonParserService pythonParserService) {
+        this.javaParserService = javaParserService;
+        this.pythonParserService = pythonParserService;
+    }
 
     /**
      * Get parser for specified language

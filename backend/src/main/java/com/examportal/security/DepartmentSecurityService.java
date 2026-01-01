@@ -1,7 +1,6 @@
 package com.examportal.security;
 
 import com.examportal.entity.User;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,8 +17,9 @@ import org.springframework.stereotype.Service;
  *   examRepository.findAll(spec);
  */
 @Service
-@RequiredArgsConstructor
 public class DepartmentSecurityService {
+
+    public DepartmentSecurityService() {}
 
     /**
      * Get current authenticated user's department

@@ -1,19 +1,10 @@
 package com.examportal.execution.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
  * Judge0 Submission Response
  * 
  * Response from Judge0 API after code execution
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class Judge0SubmissionResponse {
 
     /**
@@ -56,17 +47,55 @@ public class Judge0SubmissionResponse {
      */
     private Integer memory;
 
+    public Judge0SubmissionResponse() {}
+
+    public Judge0SubmissionResponse(String token, Status status, String stdout, String stderr, String compile_output, Integer exit_code, Double time, Integer memory) {
+        this.token = token;
+        this.status = status;
+        this.stdout = stdout;
+        this.stderr = stderr;
+        this.compile_output = compile_output;
+        this.exit_code = exit_code;
+        this.time = time;
+        this.memory = memory;
+    }
+
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
+    public String getStdout() { return stdout; }
+    public void setStdout(String stdout) { this.stdout = stdout; }
+    public String getStderr() { return stderr; }
+    public void setStderr(String stderr) { this.stderr = stderr; }
+    public String getCompile_output() { return compile_output; }
+    public void setCompile_output(String compile_output) { this.compile_output = compile_output; }
+    public Integer getExit_code() { return exit_code; }
+    public void setExit_code(Integer exit_code) { this.exit_code = exit_code; }
+    public Double getTime() { return time; }
+    public void setTime(Double time) { this.time = time; }
+    public Integer getMemory() { return memory; }
+    public void setMemory(Integer memory) { this.memory = memory; }
+
     /**
      * Execution status message
      */
     private String message;
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class Status {
         private Integer id;
         private String description;
+
+        public Status() {}
+        public Status(Integer id, String description) {
+            this.id = id;
+            this.description = description;
+        }
+
+        public Integer getId() { return id; }
+        public void setId(Integer id) { this.id = id; }
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
     }
 
     /**
@@ -97,5 +126,40 @@ public class Judge0SubmissionResponse {
     public boolean isPending() {
         return status != null && (status.getId() == 1 || status.getId() == 2);
         // 1 = In Queue, 2 = Processing
+    }
+
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
+    public String getStdout() { return stdout; }
+    public void setStdout(String stdout) { this.stdout = stdout; }
+    public String getStderr() { return stderr; }
+    public void setStderr(String stderr) { this.stderr = stderr; }
+    public String getCompile_output() { return compile_output; }
+    public void setCompile_output(String compile_output) { this.compile_output = compile_output; }
+    public Integer getExit_code() { return exit_code; }
+    public void setExit_code(Integer exit_code) { this.exit_code = exit_code; }
+    public Double getTime() { return time; }
+    public void setTime(Double time) { this.time = time; }
+    public Integer getMemory() { return memory; }
+    public void setMemory(Integer memory) { this.memory = memory; }
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public static class Status {
+        private Integer id;
+        private String description;
+
+        public Status() {}
+        public Status(Integer id, String description) {
+            this.id = id;
+            this.description = description;
+        }
+
+        public Integer getId() { return id; }
+        public void setId(Integer id) { this.id = id; }
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
     }
 }

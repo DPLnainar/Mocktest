@@ -6,8 +6,8 @@ import com.examportal.session.entity.SessionManager;
 import com.examportal.session.repository.SessionManagerRepository;
 import com.examportal.violation.entity.Violation;
 import com.examportal.violation.repository.ViolationRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -26,14 +26,24 @@ import java.util.stream.Collectors;
  * Broadcasts real-time updates to moderators
  */
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class ModeratorMonitoringService {
+
+    private static final Logger log = LoggerFactory.getLogger(ModeratorMonitoringService.class);
 
     private final SessionManagerRepository sessionRepository;
     private final ViolationRepository violationRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final RedisTemplate<String, String> redisTemplate;
+
+    public ModeratorMonitoringService(SessionManagerRepository sessionRepository, 
+                                      ViolationRepository violationRepository, 
+                                      SimpMessagingTemplate messagingTemplate, 
+                                      RedisTemplate<String, String> redisTemplate) {
+        this.sessionRepository = sessionRepository;
+        this.violationRepository = violationRepository;
+        this.messagingTemplate = messagingTemplate;
+        this.redisTemplate = redisTemplate;
+    }
 
     /**
      * Handle moderator connection
