@@ -2,6 +2,7 @@ package com.examportal.init;
 
 import com.examportal.entity.Role;
 import com.examportal.entity.User;
+import com.examportal.entity.UserRole;
 import com.examportal.repository.RoleRepository;
 import com.examportal.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -78,13 +79,19 @@ public class DatabaseInitializer implements CommandLineRunner {
             roles.add(adminRole);
 
             User admin = new User();
+            admin.setUsername("admin");
             admin.setEmail(adminEmail);
             admin.setPassword(passwordEncoder.encode("Admin@123"));
-            admin.setFullName("System Administrator");
-            admin.setDepartment("ADMIN");
+            admin.setFirstName("System");
+            admin.setLastName("Administrator");
+            admin.setProfile("ADMIN");
             admin.setEnabled(true);
-            admin.setAccountNonLocked(true);
-            admin.setRoles(roles);
+
+            // Create UserRole association
+            UserRole userRole = new UserRole();
+            userRole.setUser(admin);
+            userRole.setRole(adminRole);
+            admin.getUserRoles().add(userRole);
 
             userRepository.save(admin);
             log.info("Created admin user - Email: {}, Password: Admin@123", adminEmail);

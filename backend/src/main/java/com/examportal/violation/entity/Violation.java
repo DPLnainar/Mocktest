@@ -19,7 +19,11 @@ public class Violation {
     private Long id;
     
     private Long studentId;
+    private Long sessionId;
     private Long examId;
+    
+    @Enumerated(EnumType.STRING)
+    private ViolationType type;
     
     @Enumerated(EnumType.STRING)
     private ViolationType violationType;
@@ -31,6 +35,10 @@ public class Violation {
     private Severity severity;
     
     private LocalDateTime timestamp;
+    private LocalDateTime detectedAt;
+    
+    private boolean confirmed = false;
+    private Integer strikeCount = 1;
 
     // These Enums were missing!
     public enum ViolationType {

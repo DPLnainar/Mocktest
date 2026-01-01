@@ -45,7 +45,7 @@ public class OptimizedViolationController {
         Page<Violation> page = queryService.getSessionViolationsWithKeyset(sessionId, cursor, size);
         
         LocalDateTime nextCursor = page.hasContent() 
-                ? page.getContent().get(page.getContent().size() - 1).getDetectedAt()
+                ? page.getContent().get(page.getContent().size() - 1).getTimestamp()
                 : null;
         
         return ResponseEntity.ok(KeysetPageResponse.of(
@@ -71,7 +71,7 @@ public class OptimizedViolationController {
         Page<Violation> page = queryService.getExamViolationsWithKeyset(examId, cursor, size);
         
         LocalDateTime nextCursor = page.hasContent() 
-                ? page.getContent().get(page.getContent().size() - 1).getDetectedAt()
+                ? page.getContent().get(page.getContent().size() - 1).getTimestamp()
                 : null;
         
         return ResponseEntity.ok(KeysetPageResponse.of(
@@ -123,7 +123,7 @@ public class OptimizedViolationController {
         Page<Violation> page = queryService.getUnconfirmedViolations(since, size);
         
         LocalDateTime nextCursor = page.hasContent() 
-                ? page.getContent().get(page.getContent().size() - 1).getDetectedAt()
+                ? page.getContent().get(page.getContent().size() - 1).getTimestamp()
                 : null;
         
         return ResponseEntity.ok(KeysetPageResponse.of(
@@ -172,7 +172,7 @@ public class OptimizedViolationController {
         Page<Violation> page = queryService.getAllRecentViolations(cursor, size);
         
         LocalDateTime nextCursor = page.hasContent() 
-                ? page.getContent().get(page.getContent().size() - 1).getDetectedAt()
+                ? page.getContent().get(page.getContent().size() - 1).getTimestamp()
                 : null;
         
         return ResponseEntity.ok(KeysetPageResponse.of(

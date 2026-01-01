@@ -19,6 +19,8 @@ public class ExecutionResult {
 
     // This was missing!
     public enum ExecutionStatus {
+        QUEUED,
+        PROCESSING,
         ACCEPTED,
         WRONG_ANSWER,
         COMPILE_ERROR,

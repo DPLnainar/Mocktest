@@ -29,5 +29,8 @@ public class Judge0SubmissionResponse {
         private String description;
     }
     
-    // NO manual getters/setters below this line!
+    // Helper methods
+    public boolean isAccepted() {
+        return status != null && status.getId() != null && status.getId() == 3;
+    }
 }

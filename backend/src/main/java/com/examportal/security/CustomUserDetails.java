@@ -42,6 +42,12 @@ public class CustomUserDetails implements UserDetails {
         return user.getProfile(); 
     }
 
+    // --- Factory Method ---
+    
+    public static CustomUserDetails build(User user) {
+        return new CustomUserDetails(user);
+    }
+
     // --- UserDetails Implementation ---
 
     @Override
