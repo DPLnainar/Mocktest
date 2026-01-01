@@ -43,7 +43,7 @@ public class Violation {
     private LocalDateTime timestamp;
     private LocalDateTime detectedAt;
     
-    private boolean confirmed = false;
+    private Boolean confirmed = false;
     private Integer strikeCount = 1;
 
     // These Enums were missing!
