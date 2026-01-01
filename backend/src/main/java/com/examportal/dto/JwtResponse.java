@@ -24,7 +24,3 @@ public class JwtResponse {
     private String department;
     private List<String> roles;
 }
-    public void setDepartment(String department) { this.department = department; }
-    public List<String> getRoles() { return roles; }
-    public void setRoles(List<String> roles) { this.roles = roles; }
-}
