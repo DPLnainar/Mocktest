@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: exam-portal-postgres
+    environment:
+      POSTGRES_DB: exam_portal_db
+      POSTGRES_USER: exam_admin
+      POSTGRES_PASSWORD: SecurePassword123!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - exam-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U exam_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (for caching & atomic counters)
+  redis:
+    image: redis:7-alpine
+    container_name: exam-portal-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - exam-network
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ (for WebSocket broker relay)
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: exam-portal-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: exam_user
+      RABBITMQ_DEFAULT_PASS: exam_password
+      RABBITMQ_DEFAULT_VHOST: exam_vhost
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - exam-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Judge0 PostgreSQL Database
+  judge0-db:
+    image: postgres:15-alpine
+    container_name: judge0-postgres
+    environment:
+      POSTGRES_DB: judge0
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: YourPassword123
+    volumes:
+      - judge0_db_data:/var/lib/postgresql/data
+    networks:
+      - exam-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U judge0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Judge0 Redis
+  judge0-redis:
+    image: redis:7-alpine
+    container_name: judge0-redis
+    volumes:
+      - judge0_redis_data:/data
+    networks:
+      - exam-network
+    command: redis-server --appendonly yes
+
+  # Judge0 Server
+  judge0-server:
+    image: judge0/judge0:1.13.0
+    container_name: judge0-server
+    privileged: false
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+    ports:
+      - "2358:2358"
+    networks:
+      - exam-network
+    environment:
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=YourPassword123
+      - ENABLE_WAIT_RESULT=true
+      - ENABLE_COMPILER_OPTIONS=false
+      - ALLOWED_LANGUAGES_FOR_COMPILE_OPTIONS=
+      - ENABLE_COMMAND_LINE_ARGUMENTS=false
+      - ENABLE_SUBMISSION_DELETE=false
+      - MAX_QUEUE_SIZE=100
+      - MAX_CPU_TIME_LIMIT=5
+      - MAX_WALL_TIME_LIMIT=10
+      - MAX_MEMORY_LIMIT=256000
+      - MAX_PROCESSES_AND_OR_THREADS=50
+    depends_on:
+      judge0-db:
+        condition: service_healthy
+      judge0-redis:
+        condition: service_started
+    restart: unless-stopped
+
+  # Judge0 Workers (for parallel execution)
+  judge0-workers:
+    image: judge0/judge0:1.13.0
+    container_name: judge0-workers
+    privileged: true  # Required for sandboxing (use gVisor/kata-containers in production)
+    command: ["./scripts/workers"]
+    volumes:
+      - ./judge0.conf:/judge0.conf:ro
+    networks:
+      - exam-network
+    environment:
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=YourPassword123
+      - WORKERS_COUNT=4
+    depends_on:
+      judge0-db:
+        condition: service_healthy
+      judge0-redis:
+        condition: service_started
+    restart: unless-stopped
+    deploy:
+      replicas: 2  # Run 2 worker instances
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  judge0_db_data:
+  judge0_redis_data:
+
+networks:
+  exam-network:
+    driver: bridge

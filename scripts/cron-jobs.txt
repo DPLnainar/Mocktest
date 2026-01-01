@@ -1,0 +1,12 @@
+# Setup cron job for daily backups
+# Run: crontab -e
+# Add this line:
+
+# Daily backup at 2 AM
+0 2 * * * cd /path/to/exam-portal && ./scripts/backup.sh >> /var/log/exam-portal-backup.log 2>&1
+
+# Pre-exam health check (run manually before each exam)
+# ./scripts/health-check.sh
+
+# Weekly cleanup of old Docker resources (Sunday 3 AM)
+0 3 * * 0 docker system prune -f >> /var/log/docker-cleanup.log 2>&1

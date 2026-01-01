@@ -1,0 +1,126 @@
+server:
+  port: 8080
+  tomcat:
+    max-connections: 500
+    threads:
+      max: 200
+      min-spare: 10
+
+spring:
+  application:
+    name: exam-portal-backend
+
+  # PostgreSQL Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/exam_portal_db
+    username: exam_admin
+    password: SecurePassword123!
+    driver-class-name: org.postgresql.Driver
+    
+    # HikariCP Connection Pool Configuration
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: ExamPortalHikariPool
+
+  # JPA/Hibernate Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: false
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+    show-sql: false
+
+  # Redis Configuration
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+
+  # RabbitMQ Configuration (for WebSocket broker relay)
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: exam_user
+    password: exam_password
+    virtual-host: exam_vhost
+
+# JWT Configuration
+jwt:
+  secret: YourSuperSecretKeyForJWTTokenGenerationMustBe256BitsOrMore
+  expiration: 86400000 # 24 hours in milliseconds
+
+# CORS Configuration
+cors:
+  allowed:
+    origins: http://localhost:5173
+
+# Judge0 Configuration
+judge0:
+  api-url: http://localhost:2358
+  api-key: your-judge0-api-key
+  callback-url: http://localhost:8080/api/judge0/callback
+  max-concurrent-per-student: 10
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      judge0Service:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+
+# Violation System Configuration
+violation:
+  max-strikes: 5
+  debounce:
+    consecutive-frames-required: 3
+    confidence-threshold: 0.85
+
+# Actuator Configuration (Monitoring)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.examportal: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: WARN
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} - %msg%n'
+  file:
+    name: logs/exam-portal.log

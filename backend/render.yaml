@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: exam-portal-backend
+    runtime: java
+    plan: free
+    buildCommand: "./mvnw clean package -DskipTests"
+    startCommand: "java -Xmx400m -Xms200m -jar target/*.jar"
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: cloud
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: SPRING_REDIS_HOST
+        sync: false
+      - key: SPRING_REDIS_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JUDGE0_BASE_URL
+        value: https://judge0-ce.p.rapidapi.com
+      - key: RAPIDAPI_KEY
+        sync: false
+    healthCheckPath: /actuator/health
+    autoDeploy: true

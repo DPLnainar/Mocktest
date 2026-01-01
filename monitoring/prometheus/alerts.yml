@@ -1,0 +1,207 @@
+groups:
+  # ============================================
+  # APPLICATION ALERTS
+  # ============================================
+  - name: application_alerts
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_server_requests_seconds_count{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanize }}% over the last 5 minutes"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_server_requests_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time (p95 > 2s)"
+          description: "95th percentile response time is {{ $value | humanize }}s"
+
+      - alert: ApplicationDown
+        expr: up{job="spring-boot"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Application is down"
+          description: "Spring Boot application has been down for 1 minute"
+
+  # ============================================
+  # DATABASE ALERTS
+  # ============================================
+  - name: database_alerts
+    interval: 30s
+    rules:
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database has been down for 1 minute"
+
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends > 18
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connections"
+          description: "Database has {{ $value }} active connections (max: 20)"
+
+      - alert: SlowQueries
+        expr: rate(pg_stat_statements_mean_time_seconds[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is {{ $value | humanize }}s"
+
+      - alert: DatabaseDiskUsage
+        expr: (pg_database_size_bytes / pg_settings_max_wal_size_bytes) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database disk usage high"
+          description: "Database is using {{ $value | humanizePercentage }}% of available space"
+
+  # ============================================
+  # REDIS ALERTS
+  # ============================================
+  - name: redis_alerts
+    interval: 30s
+    rules:
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache has been down for 1 minute"
+
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis is using {{ $value | humanizePercentage }}% of max memory"
+
+      - alert: RedisKeyEviction
+        expr: rate(redis_evicted_keys_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis evicting keys"
+          description: "Redis is evicting {{ $value }} keys/s"
+
+  # ============================================
+  # RABBITMQ ALERTS
+  # ============================================
+  - name: rabbitmq_alerts
+    interval: 30s
+    rules:
+      - alert: RabbitMQDown
+        expr: up{job="rabbitmq"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ is down"
+          description: "RabbitMQ message broker has been down for 1 minute"
+
+      - alert: RabbitMQHighQueueSize
+        expr: rabbitmq_queue_messages > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ queue backing up"
+          description: "Queue has {{ $value }} messages (threshold: 1000)"
+
+      - alert: RabbitMQNoConsumers
+        expr: rabbitmq_queue_consumers == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ queue has no consumers"
+          description: "Queue {{ $labels.queue }} has no active consumers"
+
+  # ============================================
+  # SYSTEM ALERTS
+  # ============================================
+  - name: system_alerts
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value | humanize }}%"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanize }}%"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value | humanize }}% remaining"
+
+  # ============================================
+  # EXAM-SPECIFIC ALERTS
+  # ============================================
+  - name: exam_alerts
+    interval: 30s
+    rules:
+      - alert: HighViolationRate
+        expr: rate(violations_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High violation rate detected"
+          description: "{{ $value }} violations/s in the last 5 minutes"
+
+      - alert: MassTerminations
+        expr: rate(terminations_total[5m]) > 2
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Multiple students terminated"
+          description: "{{ $value }} terminations in the last 5 minutes - possible system issue"
+
+      - alert: WebSocketDisconnections
+        expr: rate(websocket_disconnections_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High WebSocket disconnection rate"
+          description: "{{ $value }} disconnections/s - check network stability"
