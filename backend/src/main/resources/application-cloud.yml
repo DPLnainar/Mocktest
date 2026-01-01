@@ -1,8 +1,13 @@
 spring:
-  profiles: cloud
+  config:
+    activate:
+      on-profile: cloud
   
   application:
     name: exam-portal
+  
+  main:
+    allow-bean-definition-overriding: true
   
   datasource:
     url: ${SPRING_DATASOURCE_URL}
