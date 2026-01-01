@@ -15,5 +15,6 @@ public class Judge0SubmissionRequest {
     private String stdin;
     private String expected_output;
     private Double cpu_time_limit;
+    private Double wall_time_limit;
     private Double memory_limit;
 }

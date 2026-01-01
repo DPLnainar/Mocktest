@@ -106,15 +106,15 @@ public class AuthController {
         roles.add(userRole);
 
         // Create new user
+        String[] nameParts = registerRequest.getFullName().split(" ", 2);
         User user = User.builder()
+            .username(registerRequest.getEmail().split("@")[0])
             .email(registerRequest.getEmail())
             .password(passwordEncoder.encode(registerRequest.getPassword()))
-            .fullName(registerRequest.getFullName())
-            .department(registerRequest.getDepartment().toUpperCase())
-            .rollNumber(registerRequest.getRollNumber())
-            .roles(roles)
+            .firstName(nameParts.length > 0 ? nameParts[0] : "")
+            .lastName(nameParts.length > 1 ? nameParts[1] : "")
+            .profile(registerRequest.getDepartment().toUpperCase())
             .enabled(true)
-            .accountNonLocked(true)
             .build();
 
         userRepository.save(user);

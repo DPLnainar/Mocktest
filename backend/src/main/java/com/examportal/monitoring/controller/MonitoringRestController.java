@@ -166,7 +166,15 @@ public class MonitoringRestController {
                 StudentStatus.ConnectionStatus.ONLINE);
         status.setActivityStatus(StudentStatus.ActivityStatus.IDLE);
         status.setViolationCount(session.getViolationCount());
-        status.setStatusColor(StudentStatus.calculateStatusColor(session.getViolationCount()));
+        // Calculate status color based on violation count
+        int violations = session.getViolationCount() != null ? session.getViolationCount() : 0;
+        if (violations > 5) {
+            status.setStatusColor(StudentStatus.StatusColor.RED);
+        } else if (violations > 2) {
+            status.setStatusColor(StudentStatus.StatusColor.YELLOW);
+        } else {
+            status.setStatusColor(StudentStatus.StatusColor.GREEN);
+        }
         status.setLastActivity(session.getLastHeartbeat());
         status.setCurrentQuestion(null);
         status.setCompletedQuestions(null);

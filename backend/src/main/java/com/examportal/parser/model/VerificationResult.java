@@ -30,5 +30,6 @@ public class VerificationResult {
         private String message;
         private int line;
         private String code;
+        private Object rule; // VerificationRule object
     }
 }
