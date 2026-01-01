@@ -30,6 +30,7 @@ public class Violation {
     
     private String screenshotUrl;
     private String message;
+    private String evidence;
     
     @Enumerated(EnumType.STRING)
     private Severity severity;
@@ -45,14 +46,19 @@ public class Violation {
         TAB_SWITCH,
         MULTIPLE_FACES,
         NO_FACE,
+        NO_FACE_DETECTED,
         UNKNOWN_FACE,
         MOBILE_DETECTED,
-        PROHIBITED_OBJECT
+        PHONE_DETECTED,
+        PROHIBITED_OBJECT,
+        COPY_PASTE_DETECTED
     }
 
     public enum Severity {
         LOW,
+        MINOR,
         MEDIUM,
+        MAJOR,
         HIGH,
         CRITICAL
     }

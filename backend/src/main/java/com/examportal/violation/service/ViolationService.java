@@ -72,11 +72,31 @@ public class ViolationService {
         int totalStrikes = getStrikeCount(sessionId);
         int confirmedCount = (int) violations.stream().filter(Violation::isConfirmed).count();
         
+        // Calculate camera violations (PHONE_DETECTED, NO_FACE_DETECTED, MULTIPLE_FACES, NO_FACE, UNKNOWN_FACE)
+        int cameraViolations = (int) violations.stream()
+                .filter(v -> v.getType() == Violation.ViolationType.PHONE_DETECTED ||
+                            v.getType() == Violation.ViolationType.NO_FACE_DETECTED ||
+                            v.getType() == Violation.ViolationType.MULTIPLE_FACES ||
+                            v.getType() == Violation.ViolationType.NO_FACE ||
+                            v.getType() == Violation.ViolationType.UNKNOWN_FACE)
+                .count();
+        
+        // Calculate tab switch count
+        int tabSwitchCount = (int) violations.stream()
+                .filter(v -> v.getType() == Violation.ViolationType.TAB_SWITCH)
+                .count();
+        
+        // Determine if session is terminated (e.g., if total strikes >= 5)
+        boolean terminated = totalStrikes >= 5;
+        
         return ViolationStats.builder()
                 .totalViolations(violations.size())
                 .totalStrikes(totalStrikes)
                 .confirmedViolations(confirmedCount)
                 .pendingReview(violations.size() - confirmedCount)
+                .cameraViolations(cameraViolations)
+                .tabSwitchCount(tabSwitchCount)
+                .terminated(terminated)
                 .violationsByType(typeCount)
                 .build();
     }
@@ -123,6 +143,9 @@ public class ViolationService {
         private int totalStrikes;
         private int confirmedViolations;
         private int pendingReview;
+        private int cameraViolations;
+        private int tabSwitchCount;
+        private boolean terminated;
         private Map<Violation.ViolationType, Long> violationsByType;
     }
 }
