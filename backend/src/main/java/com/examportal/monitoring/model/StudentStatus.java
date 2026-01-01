@@ -1,5 +1,10 @@
 package com.examportal.monitoring.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 /**
@@ -8,6 +13,10 @@ import java.time.LocalDateTime;
  * Real-time status updates broadcast to moderator dashboard
  * Includes activity status, violations, and connection health
  */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StudentStatus {
 
     /**
@@ -75,51 +84,6 @@ public class StudentStatus {
      */
     private Integer tabSwitchCount;
 
-    public StudentStatus() {}
-
-    public StudentStatus(Long studentId, String studentName, String email, Long sessionId, ConnectionStatus connectionStatus, ActivityStatus activityStatus, Integer violationCount, StatusColor statusColor, LocalDateTime lastActivity, Integer currentQuestion, Integer completedQuestions, CameraStatus cameraStatus, Integer tabSwitchCount) {
-        this.studentId = studentId;
-        this.studentName = studentName;
-        this.email = email;
-        this.sessionId = sessionId;
-        this.connectionStatus = connectionStatus;
-        this.activityStatus = activityStatus;
-        this.violationCount = violationCount;
-        this.statusColor = statusColor;
-        this.lastActivity = lastActivity;
-        this.currentQuestion = currentQuestion;
-        this.completedQuestions = completedQuestions;
-        this.cameraStatus = cameraStatus;
-        this.tabSwitchCount = tabSwitchCount;
-    }
-
-    public Long getStudentId() { return studentId; }
-    public void setStudentId(Long studentId) { this.studentId = studentId; }
-    public String getStudentName() { return studentName; }
-    public void setStudentName(String studentName) { this.studentName = studentName; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public Long getSessionId() { return sessionId; }
-    public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
-    public ConnectionStatus getConnectionStatus() { return connectionStatus; }
-    public void setConnectionStatus(ConnectionStatus connectionStatus) { this.connectionStatus = connectionStatus; }
-    public ActivityStatus getActivityStatus() { return activityStatus; }
-    public void setActivityStatus(ActivityStatus activityStatus) { this.activityStatus = activityStatus; }
-    public Integer getViolationCount() { return violationCount; }
-    public void setViolationCount(Integer violationCount) { this.violationCount = violationCount; }
-    public StatusColor getStatusColor() { return statusColor; }
-    public void setStatusColor(StatusColor statusColor) { this.statusColor = statusColor; }
-    public LocalDateTime getLastActivity() { return lastActivity; }
-    public void setLastActivity(LocalDateTime lastActivity) { this.lastActivity = lastActivity; }
-    public Integer getCurrentQuestion() { return currentQuestion; }
-    public void setCurrentQuestion(Integer currentQuestion) { this.currentQuestion = currentQuestion; }
-    public Integer getCompletedQuestions() { return completedQuestions; }
-    public void setCompletedQuestions(Integer completedQuestions) { this.completedQuestions = completedQuestions; }
-    public CameraStatus getCameraStatus() { return cameraStatus; }
-    public void setCameraStatus(CameraStatus cameraStatus) { this.cameraStatus = cameraStatus; }
-    public Integer getTabSwitchCount() { return tabSwitchCount; }
-    public void setTabSwitchCount(Integer tabSwitchCount) { this.tabSwitchCount = tabSwitchCount; }
-
     public enum ConnectionStatus {
         ONLINE,
         OFFLINE,
@@ -154,31 +118,4 @@ public class StudentStatus {
         if (violations > 0) return StatusColor.YELLOW;
         return StatusColor.GREEN;
     }
-
-    public Long getStudentId() { return studentId; }
-    public void setStudentId(Long studentId) { this.studentId = studentId; }
-    public String getStudentName() { return studentName; }
-    public void setStudentName(String studentName) { this.studentName = studentName; }
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public Long getSessionId() { return sessionId; }
-    public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
-    public ConnectionStatus getConnectionStatus() { return connectionStatus; }
-    public void setConnectionStatus(ConnectionStatus connectionStatus) { this.connectionStatus = connectionStatus; }
-    public ActivityStatus getActivityStatus() { return activityStatus; }
-    public void setActivityStatus(ActivityStatus activityStatus) { this.activityStatus = activityStatus; }
-    public Integer getViolationCount() { return violationCount; }
-    public void setViolationCount(Integer violationCount) { this.violationCount = violationCount; }
-    public StatusColor getStatusColor() { return statusColor; }
-    public void setStatusColor(StatusColor statusColor) { this.statusColor = statusColor; }
-    public LocalDateTime getLastActivity() { return lastActivity; }
-    public void setLastActivity(LocalDateTime lastActivity) { this.lastActivity = lastActivity; }
-    public Integer getCurrentQuestion() { return currentQuestion; }
-    public void setCurrentQuestion(Integer currentQuestion) { this.currentQuestion = currentQuestion; }
-    public Integer getCompletedQuestions() { return completedQuestions; }
-    public void setCompletedQuestions(Integer completedQuestions) { this.completedQuestions = completedQuestions; }
-    public CameraStatus getCameraStatus() { return cameraStatus; }
-    public void setCameraStatus(CameraStatus cameraStatus) { this.cameraStatus = cameraStatus; }
-    public Integer getTabSwitchCount() { return tabSwitchCount; }
-    public void setTabSwitchCount(Integer tabSwitchCount) { this.tabSwitchCount = tabSwitchCount; }
 }

@@ -1,6 +1,8 @@
 package com.examportal.security;
 
 import com.examportal.entity.User;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +17,8 @@ import java.util.List;
  * Wraps User entity and provides department-based authorities
  * Format: ROLE_STUDENT, ROLE_MODERATOR, DEPT_ECE, DEPT_CSE
  */
+@Getter
+@AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
     private Long id;
@@ -26,26 +30,6 @@ public class CustomUserDetails implements UserDetails {
     private boolean accountNonLocked;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(Long id, String email, String password, String fullName, String department, boolean enabled, boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.fullName = fullName;
-        this.department = department;
-        this.enabled = enabled;
-        this.accountNonLocked = accountNonLocked;
-        this.authorities = authorities;
-    }
-
-    public Long getId() { return id; }
-    public String getEmail() { return email; }
-    public String getFullName() { return fullName; }
-    public String getDepartment() { return department; }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() { return authorities; }
-    @Override
-    public String getPassword() { return password; }
     @Override
     public String getUsername() { return email; }
     @Override
@@ -81,40 +65,5 @@ public class CustomUserDetails implements UserDetails {
             user.getAccountNonLocked(),
             authorities
         );
-    }
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return accountNonLocked;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return enabled;
     }
 }
