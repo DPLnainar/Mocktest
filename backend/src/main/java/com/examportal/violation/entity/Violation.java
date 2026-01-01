@@ -1,11 +1,13 @@
 package com.examportal.violation.entity;
 
+import com.examportal.violation.converter.MapToJsonConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Entity
 @Data
@@ -30,7 +32,10 @@ public class Violation {
     
     private String screenshotUrl;
     private String message;
-    private String evidence;
+    
+    @Column(columnDefinition = "TEXT")
+    @Convert(converter = MapToJsonConverter.class)
+    private Map<String, Object> evidence;
     
     @Enumerated(EnumType.STRING)
     private Severity severity;

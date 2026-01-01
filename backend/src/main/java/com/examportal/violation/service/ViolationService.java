@@ -53,6 +53,7 @@ public class ViolationService {
                 .violationType(type)
                 .severity(severity)
                 .message(message)
+                .evidence(evidence instanceof java.util.Map ? (java.util.Map<String, Object>) evidence : null)
                 .timestamp(LocalDateTime.now())
                 .detectedAt(LocalDateTime.now())
                 .confirmed(false)
@@ -89,16 +90,16 @@ public class ViolationService {
         // Determine if session is terminated (e.g., if total strikes >= 5)
         boolean terminated = totalStrikes >= 5;
         
-        return ViolationStats.builder()
-                .totalViolations(violations.size())
-                .totalStrikes(totalStrikes)
-                .confirmedViolations(confirmedCount)
-                .pendingReview(violations.size() - confirmedCount)
-                .cameraViolations(cameraViolations)
-                .tabSwitchCount(tabSwitchCount)
-                .terminated(terminated)
-                .violationsByType(typeCount)
-                .build();
+        return new ViolationStats(
+                violations.size(),
+                totalStrikes,
+                confirmedCount,
+                violations.size() - confirmedCount,
+                cameraViolations,
+                tabSwitchCount,
+                terminated,
+                typeCount
+        );
     }
 
     public void updateViolationConfirmation(Long violationId, boolean confirmed, String reason) {
@@ -134,18 +135,14 @@ public class ViolationService {
         }
     }
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ViolationStats {
-        private int totalViolations;
-        private int totalStrikes;
-        private int confirmedViolations;
-        private int pendingReview;
-        private int cameraViolations;
-        private int tabSwitchCount;
-        private boolean terminated;
-        private Map<Violation.ViolationType, Long> violationsByType;
-    }
+    public record ViolationStats(
+        int totalViolations,
+        int totalStrikes,
+        int confirmedViolations,
+        int pendingReview,
+        int cameraViolations,
+        int tabSwitchCount,
+        boolean terminated,
+        Map<Violation.ViolationType, Long> violationsByType
+    ) {}
 }
