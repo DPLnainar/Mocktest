@@ -2,6 +2,7 @@ package com.examportal.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "users")
 @Data // Generates all getters/setters automatically
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
