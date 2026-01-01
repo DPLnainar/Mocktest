@@ -153,7 +153,7 @@ public class OptimizedViolationController {
     @PostMapping("/batch-confirm")
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     public ResponseEntity<Void> batchConfirmViolations(@RequestBody BatchConfirmRequest request) {
-        queryService.batchConfirmViolations(request.getViolationIds(), request.isConfirmed());
+        queryService.batchConfirmViolations(request.violationIds(), request.confirmed());
         return ResponseEntity.ok().build();
     }
 

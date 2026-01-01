@@ -110,7 +110,7 @@ public class MonitoringRestController {
         }
 
         log.warn("Moderator {} terminating session {} for student {}: {}", 
-                moderator.getId(), sessionId, session.getStudentId(), request.getReason());
+                moderator.getId(), sessionId, session.getStudentId(), request.reason());
 
         // Terminate session
         sessionManager.terminateSession(sessionId);
@@ -119,11 +119,11 @@ public class MonitoringRestController {
         broadcastService.sendToStudent(
                 session.getStudentId(), 
                 "termination",
-                new TerminationNotice(request.getReason(), LocalDateTime.now())
+                new TerminationNotice(request.reason(), LocalDateTime.now())
         );
 
         // Broadcast to moderators
-        broadcastService.broadcastTermination(session.getExamId(), session.getStudentId(), request.getReason());
+        broadcastService.broadcastTermination(session.getExamId(), session.getStudentId(), request.reason());
 
         return ResponseEntity.ok("Session terminated successfully");
     }

@@ -78,7 +78,7 @@ public class MonitoringBroadcastService {
         
         try {
             messagingTemplate.convertAndSend(destination, alert);
-            log.info("Broadcast violation alert for student {} to exam {}", alert.getStudentId(), examId);
+            log.info("Broadcast violation alert for student {} to exam {}", alert.studentId(), examId);
         } catch (Exception e) {
             log.error("Error broadcasting violation alert", e);
         }
