@@ -9,6 +9,9 @@ server:
 spring:
   application:
     name: exam-portal-backend
+  
+  main:
+    allow-bean-definition-overriding: true
 
   # PostgreSQL Configuration
   datasource:
