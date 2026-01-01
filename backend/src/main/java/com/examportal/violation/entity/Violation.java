@@ -9,9 +9,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Builder // Added this
-@NoArgsConstructor // Added this
-@AllArgsConstructor // Added this
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Violation {
     
     @Id
@@ -20,8 +20,32 @@ public class Violation {
     
     private Long studentId;
     private Long examId;
-    private String violationType;
+    
+    @Enumerated(EnumType.STRING)
+    private ViolationType violationType;
+    
     private String screenshotUrl;
     private String message;
+    
+    @Enumerated(EnumType.STRING)
+    private Severity severity;
+    
     private LocalDateTime timestamp;
+
+    // These Enums were missing!
+    public enum ViolationType {
+        TAB_SWITCH,
+        MULTIPLE_FACES,
+        NO_FACE,
+        UNKNOWN_FACE,
+        MOBILE_DETECTED,
+        PROHIBITED_OBJECT
+    }
+
+    public enum Severity {
+        LOW,
+        MEDIUM,
+        HIGH,
+        CRITICAL
+    }
 }
