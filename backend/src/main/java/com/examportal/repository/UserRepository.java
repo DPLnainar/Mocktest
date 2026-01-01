@@ -18,9 +18,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByDepartment(String department);
 
-    @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName")
+    @Query("SELECT DISTINCT u FROM User u JOIN u.userRoles ur JOIN ur.role r WHERE r.name = :roleName")
     List<User> findByRoleName(@Param("roleName") String roleName);
 
-    @Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = :roleName AND u.department = :department")
+    @Query("SELECT DISTINCT u FROM User u JOIN u.userRoles ur JOIN ur.role r WHERE r.name = :roleName AND u.department = :department")
     List<User> findByRoleNameAndDepartment(@Param("roleName") String roleName, @Param("department") String department);
 }
