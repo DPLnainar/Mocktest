@@ -158,7 +158,7 @@ public class PythonParserService implements ParserService {
         }
 
         if (!hasRecursion && rule.getType() == VerificationRule.RuleType.REQUIRED) {
-            result.addViolation(VerificationResult.Violation.builder()
+            result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
@@ -178,7 +178,7 @@ public class PythonParserService implements ParserService {
                             code.contains("temp");
 
         if (!hasNestedLoops || !hasSwapping) {
-            result.addViolation(VerificationResult.Violation.builder()
+            result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
@@ -202,7 +202,7 @@ public class PythonParserService implements ParserService {
                                      Pattern pattern, VerificationResult result) {
         java.util.regex.Matcher matcher = pattern.matcher(code);
         if (!matcher.find() && rule.getType() == VerificationRule.RuleType.REQUIRED) {
-            result.addViolation(VerificationResult.Violation.builder()
+            result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
@@ -218,7 +218,7 @@ public class PythonParserService implements ParserService {
         int lineNumber = getLineNumber(code, position);
         String snippet = lines[lineNumber - 1].trim();
 
-        result.addViolation(VerificationResult.Violation.builder()
+        result.getViolations().add(VerificationResult.Violation.builder()
                 .rule(rule)
                 .lineNumber(lineNumber)
                 .codeSnippet(snippet)

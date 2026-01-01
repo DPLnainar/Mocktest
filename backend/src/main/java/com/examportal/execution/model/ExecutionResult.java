@@ -15,6 +15,7 @@ public class ExecutionResult {
     private String output;
     private String error;
     private String compileOutput;
+    private Integer exitCode;
     private ExecutionStatus status; // Changed from String to Enum
     private double time;
     private double memory;

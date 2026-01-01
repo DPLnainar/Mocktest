@@ -111,7 +111,7 @@ public class JavaParserService implements ParserService {
             int lineNumber = getLineNumber(code, matcher.start());
             String snippet = lines[lineNumber - 1].trim();
 
-            result.addViolation(VerificationResult.Violation.builder()
+            result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(lineNumber)
                     .codeSnippet(snippet)
@@ -129,7 +129,7 @@ public class JavaParserService implements ParserService {
             int lineNumber = getLineNumber(code, matcher.start());
             String snippet = lines[lineNumber - 1].trim();
 
-            result.addViolation(VerificationResult.Violation.builder()
+            result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(lineNumber)
                     .codeSnippet(snippet)
@@ -168,7 +168,7 @@ public class JavaParserService implements ParserService {
         }
 
         if (!hasRecursion && rule.getType() == VerificationRule.RuleType.REQUIRED) {
-            result.addViolation(VerificationResult.Violation.builder()
+            result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
@@ -187,7 +187,7 @@ public class JavaParserService implements ParserService {
         boolean hasSwapping = code.contains("temp") || Pattern.compile("\\w+\\s*=\\s*\\w+;[^;]*\\w+\\s*=\\s*\\w+;").matcher(code).find();
 
         if (!hasNestedLoops || !hasSwapping) {
-            result.addViolation(VerificationResult.Violation.builder()
+            result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
@@ -200,7 +200,7 @@ public class JavaParserService implements ParserService {
                                      Pattern pattern, VerificationResult result) {
         java.util.regex.Matcher matcher = pattern.matcher(code);
         if (!matcher.find() && rule.getType() == VerificationRule.RuleType.REQUIRED) {
-            result.addViolation(VerificationResult.Violation.builder()
+            result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
