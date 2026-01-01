@@ -1,5 +1,5 @@
 # Multi-stage build for Spring Boot
-FROM maven:3.8.4-openjdk-17 AS builder
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
