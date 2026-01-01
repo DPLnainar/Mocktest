@@ -6,14 +6,25 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder // Added this
-@NoArgsConstructor // Added this
-@AllArgsConstructor // Added this
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ExecutionResult {
     private String output;
     private String error;
-    private String status; // "ACCEPTED", "WRONG_ANSWER", "COMPILE_ERROR"
+    private ExecutionStatus status; // Changed from String to Enum
     private double time;
     private double memory;
     private String message;
+
+    // This was missing!
+    public enum ExecutionStatus {
+        ACCEPTED,
+        WRONG_ANSWER,
+        COMPILE_ERROR,
+        RUNTIME_ERROR,
+        TIME_LIMIT_EXCEEDED,
+        MEMORY_LIMIT_EXCEEDED,
+        INTERNAL_ERROR
+    }
 }
