@@ -36,6 +36,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     public void run(String... args) {
         initializeRoles();
         initializeAdminUser();
+        initializeTestStudent();
         log.info("Database initialization complete!");
     }
 
@@ -95,6 +96,34 @@ public class DatabaseInitializer implements CommandLineRunner {
 
             userRepository.save(admin);
             log.info("Created admin user - Email: {}, Password: Admin@123", adminEmail);
+        }
+    }
+
+    private void initializeTestStudent() {
+        String studentEmail = "student@examportal.com";
+        
+        if (userRepository.findByEmail(studentEmail).isEmpty()) {
+            Role studentRole = roleRepository.findByName(Role.STUDENT)
+                .orElseThrow(() -> new RuntimeException("Student role not found"));
+
+            User student = new User();
+            student.setUsername("student");
+            student.setEmail(studentEmail);
+            student.setPassword(passwordEncoder.encode("Student@123"));
+            student.setFirstName("Test");
+            student.setLastName("Student");
+            student.setDepartment("CSE");
+            student.setProfile("STUDENT");
+            student.setEnabled(true);
+
+            // Create UserRole association
+            UserRole userRole = new UserRole();
+            userRole.setUser(student);
+            userRole.setRole(studentRole);
+            student.getUserRoles().add(userRole);
+
+            userRepository.save(student);
+            log.info("Created test student - Email: {}, Password: Student@123", studentEmail);
         }
     }
 }
