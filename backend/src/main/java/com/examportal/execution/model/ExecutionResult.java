@@ -20,6 +20,7 @@ public class ExecutionResult {
     private double time;
     private Long cpuTimeMs;
     private double memory;
+    private Double memoryKb;
     private String message;
     private boolean passed;
     private java.time.LocalDateTime executedAt;
