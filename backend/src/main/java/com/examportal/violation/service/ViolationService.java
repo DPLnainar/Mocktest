@@ -71,7 +71,7 @@ public class ViolationService {
                 .collect(Collectors.groupingBy(Violation::getType, Collectors.counting()));
         
         int totalStrikes = getStrikeCount(sessionId);
-        int confirmedCount = (int) violations.stream().filter(Violation::isConfirmed).count();
+        int confirmedCount = (int) violations.stream().filter(v -> Boolean.TRUE.equals(v.getConfirmed())).count();
         
         // Calculate camera violations (PHONE_DETECTED, NO_FACE_DETECTED, MULTIPLE_FACES, NO_FACE, UNKNOWN_FACE)
         int cameraViolations = (int) violations.stream()
