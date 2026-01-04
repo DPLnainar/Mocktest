@@ -1,15 +1,19 @@
 package com.examportal.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.persistence.*;;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"user"})
 @Table(name = "user_role")
 public class UserRole {
 

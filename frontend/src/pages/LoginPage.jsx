@@ -37,12 +37,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
       <div className="bg-gray-800 p-8 rounded-lg shadow-2xl w-96">
         <h1 className="text-3xl font-bold text-center mb-6 text-green-400">
-          Exam Portal
+          Mock Test Portal
         </h1>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
+            <label className="block text-sm font-medium mb-2 text-center">Email</label>
             <input
               type="email"
               value={email}
@@ -54,7 +54,7 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Password</label>
+            <label className="block text-sm font-medium mb-2 text-center">Password</label>
             <input
               type="password"
               value={password}

@@ -123,10 +123,38 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  # Backend Application
+  backend:
+    build: .
+    container_name: exam-portal-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/exam_portal_db
+      - SPRING_DATASOURCE_USERNAME=exam_admin
+      - SPRING_DATASOURCE_PASSWORD=SecurePassword123!
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=exam_user
+      - SPRING_RABBITMQ_PASSWORD=exam_password
+      - SPRING_RABBITMQ_VIRTUAL_HOST=exam_vhost
+      - JUDGE0_API_URL=http://judge0-server:2358
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - exam-network
+    restart: unless-stopped
+
   # Judge0 Workers (for parallel execution)
   judge0-workers:
     image: judge0/judge0:1.13.0
-    container_name: judge0-workers
     privileged: true  # Required for sandboxing (use gVisor/kata-containers in production)
     command: ["./scripts/workers"]
     volumes:
