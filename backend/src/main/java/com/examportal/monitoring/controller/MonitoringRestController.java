@@ -78,7 +78,7 @@ public class MonitoringRestController {
      * GET /api/monitoring/department/sessions
      */
     @GetMapping("/department/sessions")
-    @PreAuthorize("hasRole('MODERATOR')")
+    @PreAuthorize("hasAuthority('MODERATOR')")
     public ResponseEntity<List<StudentStatus>> getDepartmentSessions(
             @AuthenticationPrincipal CustomUserDetails moderator) {
         

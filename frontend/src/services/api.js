@@ -7,7 +7,7 @@ import { useAuthStore } from '../store/authStore'
  */
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api',
   timeout: 30000,
 })
 
@@ -38,46 +38,46 @@ api.interceptors.response.use(
 
 // Auth endpoints
 export const authAPI = {
-  login: (email, password) => 
+  login: (email, password) =>
     api.post('/auth/login', { email, password }),
-    
-  register: (userData) => 
+
+  register: (userData) =>
     api.post('/auth/register', userData),
 }
 
 // Violation endpoints
 export const violationAPI = {
-  report: (violation) => 
+  report: (violation) =>
     api.post('/violations/report', violation),
-    
-  getStrikeCount: (sessionId) => 
+
+  getStrikeCount: (sessionId) =>
     api.get(`/violations/session/${sessionId}/strikes`),
-    
-  getSessionViolations: (sessionId) => 
+
+  getSessionViolations: (sessionId) =>
     api.get(`/violations/session/${sessionId}`),
 }
 
 // Execution endpoints
 export const executionAPI = {
-  execute: (submission) => 
+  execute: (submission) =>
     api.post('/execution/execute', submission),
-    
-  getResult: (submissionId) => 
+
+  getResult: (submissionId) =>
     api.get(`/execution/result/${submissionId}`),
 }
 
 // Parser endpoints
 export const parserAPI = {
-  verify: (code, language, rules) => 
+  verify: (code, language, rules) =>
     api.post('/parser/verify', { code, language, rules }),
 }
 
 // Session endpoints
 export const sessionAPI = {
-  create: (examId) => 
+  create: (examId) =>
     api.post('/monitoring/session/create', { examId }),
-    
-  getSession: (sessionId) => 
+
+  getSession: (sessionId) =>
     api.get(`/monitoring/session/${sessionId}`),
 }
 

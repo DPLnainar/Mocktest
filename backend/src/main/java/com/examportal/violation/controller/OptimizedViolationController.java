@@ -164,7 +164,7 @@ public class OptimizedViolationController {
      * GET /api/violations/optimized/recent?cursor=2025-12-31T10:30:00&size=100
      */
     @GetMapping("/recent")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<KeysetPageResponse<List<Violation>>> getAllRecentViolations(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
             @RequestParam(defaultValue = "100") int size) {

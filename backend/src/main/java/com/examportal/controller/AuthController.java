@@ -5,6 +5,7 @@ import com.examportal.dto.LoginRequest;
 import com.examportal.dto.RegisterRequest;
 import com.examportal.entity.Role;
 import com.examportal.entity.User;
+import com.examportal.entity.UserRole;
 import com.examportal.repository.RoleRepository;
 import com.examportal.repository.UserRepository;
 import com.examportal.security.JwtTokenProvider;
@@ -56,6 +57,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
+        System.out.println("LOGIN ATTEMPT: " + loginRequest.getEmail());
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 loginRequest.getEmail(),
@@ -98,12 +100,9 @@ public class AuthController {
         }
 
         // Get role from repository
-        Role userRole = roleRepository.findByName(registerRequest.getRole())
+        Role role = roleRepository.findByName(registerRequest.getRole())
             .orElseGet(() -> roleRepository.findByName(Role.STUDENT)
                 .orElseThrow(() -> new RuntimeException("Error: Role not found")));
-
-        Set<Role> roles = new HashSet<>();
-        roles.add(userRole);
 
         // Create new user
         String[] nameParts = registerRequest.getFullName().split(" ", 2);
@@ -116,6 +115,15 @@ public class AuthController {
             .profile(registerRequest.getDepartment().toUpperCase())
             .enabled(true)
             .build();
+
+        // Create UserRole relation
+        Set<UserRole> userRoles = new HashSet<>();
+        UserRole userRoleRelation = new UserRole();
+        userRoleRelation.setRole(role);
+        userRoleRelation.setUser(user);
+        userRoles.add(userRoleRelation);
+        
+        user.setUserRoles(userRoles);
 
         userRepository.save(user);
 

@@ -54,7 +54,7 @@ public class JwtTokenProvider {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 
         return Jwts.builder()
-                .subject(userDetails.getUsername())
+                .subject(userDetails.getEmail()) // Use email as subject for consistency with loadUserByUsername
                 .claims(claims)
                 .issuedAt(now)
                 .expiration(expiryDate)

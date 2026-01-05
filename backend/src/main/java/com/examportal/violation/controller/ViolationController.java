@@ -46,7 +46,7 @@ public class ViolationController {
      * POST /api/violations/report
      */
     @PostMapping("/report")
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ViolationResponse> reportViolation(
             @Valid @RequestBody EnhancedViolationRequest request,
             @AuthenticationPrincipal CustomUserDetails student) {
@@ -94,7 +94,7 @@ public class ViolationController {
      * GET /api/violations/session/{sessionId}
      */
     @GetMapping("/session/{sessionId}")
-    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MODERATOR', 'ADMIN')")
     public ResponseEntity<List<Violation>> getSessionViolations(@PathVariable Long sessionId) {
         log.debug("Fetching violations for session {}", sessionId);
 
@@ -108,7 +108,7 @@ public class ViolationController {
      * GET /api/violations/student/{studentId}
      */
     @GetMapping("/student/{studentId}")
-    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MODERATOR', 'ADMIN')")
     public ResponseEntity<List<Violation>> getStudentViolations(@PathVariable Long studentId) {
         log.debug("Fetching violations for student {}", studentId);
 
@@ -122,7 +122,7 @@ public class ViolationController {
      * GET /api/violations/exam/{examId}
      */
     @GetMapping("/exam/{examId}")
-    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MODERATOR', 'ADMIN')")
     public ResponseEntity<List<Violation>> getExamViolations(@PathVariable Long examId) {
         log.debug("Fetching violations for exam {}", examId);
 
@@ -136,7 +136,7 @@ public class ViolationController {
      * GET /api/violations/session/{sessionId}/strikes
      */
     @GetMapping("/session/{sessionId}/strikes")
-    @PreAuthorize("hasAnyRole('STUDENT', 'MODERATOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('STUDENT', 'MODERATOR', 'ADMIN')")
     public ResponseEntity<StrikeCountResponse> getStrikeCount(@PathVariable Long sessionId) {
         int strikeCount = violationService.getStrikeCount(sessionId);
         
@@ -153,7 +153,7 @@ public class ViolationController {
      * GET /api/violations/session/{sessionId}/stats
      */
     @GetMapping("/session/{sessionId}/stats")
-    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MODERATOR', 'ADMIN')")
     public ResponseEntity<ViolationService.ViolationStats> getViolationStats(@PathVariable Long sessionId) {
         ViolationService.ViolationStats stats = violationService.getViolationStats(sessionId);
         return ResponseEntity.ok(stats);
@@ -165,7 +165,7 @@ public class ViolationController {
      * PUT /api/violations/{violationId}/confirm
      */
     @PutMapping("/{violationId}/confirm")
-    @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('MODERATOR', 'ADMIN')")
     public ResponseEntity<String> confirmViolation(
             @PathVariable Long violationId,
             @RequestBody ConfirmationRequest request) {
@@ -189,7 +189,7 @@ public class ViolationController {
      * POST /api/violations/session/{sessionId}/reset
      */
     @PostMapping("/session/{sessionId}/reset")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> resetStrikeCount(
             @PathVariable Long sessionId,
             @RequestBody ResetRequest request) {
