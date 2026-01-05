@@ -82,6 +82,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/proctor/attempts/**").hasAnyAuthority("MODERATOR", "ADMIN")
                 .requestMatchers("/api/proctor/recording/**").hasAnyAuthority("MODERATOR", "ADMIN") // Wildcard for viewing
                 .requestMatchers("/api/analytics/**").hasAnyAuthority("MODERATOR", "ADMIN")
+                .requestMatchers("/api/code/verify").authenticated() // Allow all authenticated users to verify code
                 
                 // Admin endpoints
                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
