@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as cocoSsd from '@tensorflow-models/coco-ssd'
-import '@tensorflow/tfjs'
+
 import { useExamStore } from '../store/examStore'
 import toast from 'react-hot-toast'
 
@@ -20,7 +20,7 @@ export function useCameraMonitor(onViolation, enabled = true) {
   const modelRef = useRef(null)
   const streamRef = useRef(null)
   const detectionIntervalRef = useRef(null)
-  
+
   // Phase 8: Frame buffer for consecutive tracking
   const frameBufferRef = useRef([]) // Stores last 30 frames
   const violationBufferRef = useRef({
@@ -120,9 +120,9 @@ export function useCameraMonitor(onViolation, enabled = true) {
         timestamp: Date.now(),
         predictions,
       }
-      
+
       frameBufferRef.current.push(frameData)
-      
+
       // Keep only last 30 frames (3 seconds at 10 FPS)
       if (frameBufferRef.current.length > 30) {
         frameBufferRef.current.shift()
@@ -189,26 +189,26 @@ export function useCameraMonitor(onViolation, enabled = true) {
     if (frameBufferRef.current.length < 3) return // Need at least 3 frames
 
     const recentFrames = frameBufferRef.current.slice(-3) // Last 3 frames
-    
+
     // Check multiple faces
     const multipleFacesFrames = recentFrames.filter(frame => {
       const persons = frame.predictions.filter(p => p.class === 'person')
       if (persons.length <= 1) return false
-      
+
       // Phase 8: High confidence threshold (0.85+)
       const maxConfidence = Math.max(...persons.map(p => p.score))
       return maxConfidence >= 0.85
     })
-    
+
     if (multipleFacesFrames.length >= 3) {
       violationBufferRef.current.multiple_faces++
-      
+
       if (violationBufferRef.current.multiple_faces === 3) {
         // Confirmed violation - capture evidence NOW
         const latestFrame = frameBufferRef.current[frameBufferRef.current.length - 1]
         const persons = latestFrame.predictions.filter(p => p.class === 'person')
         const confidence = Math.max(...persons.map(p => p.score))
-        
+
         onViolation(
           'MULTIPLE_FACES',
           'MAJOR',
@@ -220,22 +220,22 @@ export function useCameraMonitor(onViolation, enabled = true) {
             screenshot: captureScreenshot(), // Evidence captured only on confirmation
           }
         )
-        
+
         violationBufferRef.current.multiple_faces = 0 // Reset after trigger
       }
     } else {
       violationBufferRef.current.multiple_faces = 0
     }
-    
+
     // Check no face
     const noFaceFrames = recentFrames.filter(frame => {
       const persons = frame.predictions.filter(p => p.class === 'person')
       return persons.length === 0
     })
-    
+
     if (noFaceFrames.length >= 3) {
       violationBufferRef.current.no_face++
-      
+
       if (violationBufferRef.current.no_face === 3) {
         onViolation(
           'NO_FACE_DETECTED',
@@ -247,26 +247,26 @@ export function useCameraMonitor(onViolation, enabled = true) {
             screenshot: captureScreenshot(),
           }
         )
-        
+
         violationBufferRef.current.no_face = 0
       }
     } else {
       violationBufferRef.current.no_face = 0
     }
-    
+
     // Check phone detection
     const phoneFrames = recentFrames.filter(frame => {
       const phone = frame.predictions.find(p => p.class === 'cell phone')
       return phone && phone.score >= 0.85 // Phase 8: 0.85 threshold
     })
-    
+
     if (phoneFrames.length >= 3) {
       violationBufferRef.current.phone++
-      
+
       if (violationBufferRef.current.phone === 3) {
         const latestFrame = frameBufferRef.current[frameBufferRef.current.length - 1]
         const phone = latestFrame.predictions.find(p => p.class === 'cell phone')
-        
+
         onViolation(
           'PHONE_DETECTED',
           'MAJOR',
@@ -283,26 +283,26 @@ export function useCameraMonitor(onViolation, enabled = true) {
             screenshot: captureScreenshot(),
           }
         )
-        
+
         violationBufferRef.current.phone = 0
       }
     } else {
       violationBufferRef.current.phone = 0
     }
-    
+
     // Check book detection
     const bookFrames = recentFrames.filter(frame => {
       const book = frame.predictions.find(p => p.class === 'book')
       return book && book.score >= 0.85 // Phase 8: 0.85 threshold
     })
-    
+
     if (bookFrames.length >= 3) {
       violationBufferRef.current.book++
-      
+
       if (violationBufferRef.current.book === 3) {
         const latestFrame = frameBufferRef.current[frameBufferRef.current.length - 1]
         const book = latestFrame.predictions.find(p => p.class === 'book')
-        
+
         onViolation(
           'SUSPICIOUS_ACTIVITY',
           'MAJOR',
@@ -314,7 +314,7 @@ export function useCameraMonitor(onViolation, enabled = true) {
             screenshot: captureScreenshot(),
           }
         )
-        
+
         violationBufferRef.current.book = 0
       }
     } else {

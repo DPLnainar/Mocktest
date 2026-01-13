@@ -34,7 +34,8 @@ public class Judge0Service {
     private final StringRedisTemplate redisTemplate;
     private final ExecutionQueueService executionQueueService;
 
-    public Judge0Service(Judge0Client judge0Client, StringRedisTemplate redisTemplate, ExecutionQueueService executionQueueService) {
+    public Judge0Service(Judge0Client judge0Client, StringRedisTemplate redisTemplate,
+            ExecutionQueueService executionQueueService) {
         this.judge0Client = judge0Client;
         this.redisTemplate = redisTemplate;
         this.executionQueueService = executionQueueService;
@@ -56,43 +57,52 @@ public class Judge0Service {
      * Submit code for execution
      * Circuit breaker protects against Judge0 failures
      * 
-     * @param code Source code
+     * @param code       Source code
      * @param languageId Judge0 language ID
-     * @param stdin Standard input
-     * @param studentId Student ID (for rate limiting)
+     * @param stdin      Standard input
+     * @param studentId  Student ID (for rate limiting)
      * @return Execution result
      */
     @CircuitBreaker(name = "judge0Service", fallbackMethod = "executionFallback")
     public ExecutionResult executeCode(String code, Integer languageId, String stdin, Long studentId) {
+        return executeCode(code, languageId, stdin, studentId, 5.0, 10.0, 256000.0);
+    }
+
+    /**
+     * Submit code for execution with custom limits
+     */
+    @CircuitBreaker(name = "judge0Service", fallbackMethod = "executionFallbackWithLimits")
+    public ExecutionResult executeCode(String code, Integer languageId, String stdin, Long studentId,
+            Double cpuTimeLimit, Double wallTimeLimit, Double memoryLimit) {
         // Check rate limit
         if (!checkRateLimit(studentId)) {
             return ExecutionResult.builder()
-                .executionId(UUID.randomUUID().toString())
-                .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
-                .error("Rate limit exceeded. Maximum " + maxConcurrentPerStudent + 
-                       " concurrent executions allowed.")
-                .executedAt(LocalDateTime.now())
-                .build();
+                    .executionId(UUID.randomUUID().toString())
+                    .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
+                    .error("Rate limit exceeded. Maximum " + maxConcurrentPerStudent +
+                            " concurrent executions allowed.")
+                    .executedAt(LocalDateTime.now())
+                    .build();
         }
 
         String executionId = UUID.randomUUID().toString();
-        
+
         try {
             // Increment student's concurrent execution count
             incrementExecutionCount(studentId);
 
             // Build submission request
             Judge0SubmissionRequest request = Judge0SubmissionRequest.builder()
-                .source_code(code)
-                .language_id(languageId)
-                .stdin(stdin)
-                .cpu_time_limit(5.0)
-                .wall_time_limit(10.0)
-                .memory_limit(256000.0)
-                .callback_url(callbackUrl + "/" + executionId)
-                .wait(false) // Async mode
-                .base64_encoded(false)
-                .build();
+                    .source_code(code)
+                    .language_id(languageId)
+                    .stdin(stdin)
+                    .cpu_time_limit(cpuTimeLimit)
+                    .wall_time_limit(wallTimeLimit)
+                    .memory_limit(memoryLimit)
+                    .callback_url(callbackUrl + "/" + executionId)
+                    .wait(false) // Async mode
+                    .base64_encoded(false)
+                    .build();
 
             log.info("Submitting code execution for student {} with execution ID {}", studentId, executionId);
 
@@ -104,11 +114,11 @@ public class Judge0Service {
 
             // Return initial result
             return ExecutionResult.builder()
-                .executionId(executionId)
-                .submissionToken(response.getToken())
-                .status(ExecutionResult.ExecutionStatus.QUEUED)
-                .executedAt(LocalDateTime.now())
-                .build();
+                    .executionId(executionId)
+                    .submissionToken(response.getToken())
+                    .status(ExecutionResult.ExecutionStatus.QUEUED)
+                    .executedAt(LocalDateTime.now())
+                    .build();
 
         } catch (Exception e) {
             log.error("Error submitting code execution", e);
@@ -133,10 +143,10 @@ public class Judge0Service {
         String submissionToken = executionQueueService.getSubmissionToken(executionId);
         if (submissionToken == null) {
             return ExecutionResult.builder()
-                .executionId(executionId)
-                .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
-                .error("Execution not found")
-                .build();
+                    .executionId(executionId)
+                    .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
+                    .error("Execution not found")
+                    .build();
         }
 
         // Poll Judge0 for result
@@ -150,20 +160,19 @@ public class Judge0Service {
     private ExecutionResult pollJudge0Result(String executionId, String submissionToken) {
         try {
             Judge0SubmissionResponse response = judge0Client.getSubmission(
-                apiKey, 
-                apiHost,
-                submissionToken, 
-                "stdout,stderr,status,compile_output,time,memory,exit_code"
-            );
+                    apiKey,
+                    apiHost,
+                    submissionToken,
+                    "stdout,stderr,status,compile_output,time,memory,exit_code");
 
             ExecutionResult result = convertToExecutionResult(executionId, response);
 
             // Cache result if execution is complete
             if (!result.getStatus().equals(ExecutionResult.ExecutionStatus.QUEUED) &&
-                !result.getStatus().equals(ExecutionResult.ExecutionStatus.PROCESSING)) {
-                
+                    !result.getStatus().equals(ExecutionResult.ExecutionStatus.PROCESSING)) {
+
                 cacheExecutionResult(executionId, result);
-                
+
                 // Decrement student's execution count
                 Long studentId = executionQueueService.getStudentId(executionId);
                 if (studentId != null) {
@@ -188,14 +197,14 @@ public class Judge0Service {
         Judge0SubmissionRequest[] requests = new Judge0SubmissionRequest[testInputs.length];
         for (int i = 0; i < testInputs.length; i++) {
             requests[i] = Judge0SubmissionRequest.builder()
-                .source_code(code)
-                .language_id(languageId)
-                .stdin(testInputs[i])
-                .cpu_time_limit(5.0)
-                .wall_time_limit(10.0)
-                .memory_limit(256000.0)
-                .wait(true) // Sync mode for batch
-                .build();
+                    .source_code(code)
+                    .language_id(languageId)
+                    .stdin(testInputs[i])
+                    .cpu_time_limit(5.0)
+                    .wall_time_limit(10.0)
+                    .memory_limit(256000.0)
+                    .wait(true) // Sync mode for batch
+                    .build();
         }
 
         // Submit batch
@@ -216,7 +225,7 @@ public class Judge0Service {
     private boolean checkRateLimit(Long studentId) {
         String key = "execution:count:student:" + studentId;
         String count = redisTemplate.opsForValue().get(key);
-        
+
         if (count == null) {
             return true;
         }
@@ -246,18 +255,18 @@ public class Judge0Service {
      */
     private ExecutionResult convertToExecutionResult(String executionId, Judge0SubmissionResponse response) {
         return ExecutionResult.builder()
-            .executionId(executionId)
-            .submissionToken(response.getToken())
-            .status(ExecutionResult.fromJudge0Status(response.getStatus().getId()))
-            .output(response.getStdout())
-            .error(response.getStderr())
-            .compileOutput(response.getCompile_output())
-            .exitCode(response.getExit_code())
-            .cpuTimeMs(response.getTime() != null ? (long)(response.getTime() * 1000) : null)
-            .memoryKb(response.getMemory())
-            .passed(response.isAccepted())
-            .executedAt(LocalDateTime.now())
-            .build();
+                .executionId(executionId)
+                .submissionToken(response.getToken())
+                .status(ExecutionResult.fromJudge0Status(response.getStatus().getId()))
+                .output(response.getStdout())
+                .error(response.getStderr())
+                .compileOutput(response.getCompile_output())
+                .exitCode(response.getExit_code())
+                .cpuTimeMs(response.getTime() != null ? (long) (response.getTime() * 1000) : null)
+                .memoryKb(response.getMemory())
+                .passed(response.isAccepted())
+                .executedAt(LocalDateTime.now())
+                .build();
     }
 
     /**
@@ -266,7 +275,8 @@ public class Judge0Service {
     private void cacheExecutionResult(String executionId, ExecutionResult result) {
         String key = "execution:result:" + executionId;
         // Store as JSON or serialized object
-        redisTemplate.opsForValue().set(key, result.toString(), 1, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(java.util.Objects.requireNonNull(key),
+                java.util.Objects.requireNonNull(result.toString()), 1, TimeUnit.HOURS);
     }
 
     private ExecutionResult parseExecutionResult(String cached) {
@@ -277,32 +287,34 @@ public class Judge0Service {
     /**
      * Fallback method when circuit breaker opens
      */
-    private ExecutionResult executionFallback(String code, Integer languageId, String stdin, 
-                                              Long studentId, Exception e) {
+    private ExecutionResult executionFallback(String code, Integer languageId, String stdin,
+            Long studentId, Exception e) {
         log.error("Circuit breaker activated - Judge0 service unavailable", e);
-        
+
         return ExecutionResult.builder()
-            .executionId(UUID.randomUUID().toString())
-            .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
-            .error("Code execution service is temporarily unavailable. Please try again later.")
-            .executedAt(LocalDateTime.now())
-            .build();
+                .executionId(UUID.randomUUID().toString())
+                .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
+                .error("Code execution service is temporarily unavailable. Please try again later.")
+                .executedAt(LocalDateTime.now())
+                .build();
     }
 
+    @SuppressWarnings("unused")
     private ExecutionResult pollFallback(String executionId, String submissionToken, Exception e) {
         log.error("Circuit breaker activated - Cannot poll Judge0 result", e);
-        
+
         return ExecutionResult.builder()
-            .executionId(executionId)
-            .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
-            .error("Unable to retrieve execution result. Service temporarily unavailable.")
-            .build();
+                .executionId(executionId)
+                .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
+                .error("Unable to retrieve execution result. Service temporarily unavailable.")
+                .build();
     }
 
-    private ExecutionResult[] batchExecutionFallback(String code, Integer languageId, 
-                                                     String[] testInputs, Long studentId, Exception e) {
+    @SuppressWarnings("unused")
+    private ExecutionResult[] batchExecutionFallback(String code, Integer languageId,
+            String[] testInputs, Long studentId, Exception e) {
         log.error("Circuit breaker activated - Batch execution failed", e);
-        
+
         ExecutionResult[] results = new ExecutionResult[testInputs.length];
         for (int i = 0; i < results.length; i++) {
             results[i] = executionFallback(code, languageId, testInputs[i], studentId, e);

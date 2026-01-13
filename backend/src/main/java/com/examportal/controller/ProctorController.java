@@ -22,11 +22,10 @@ public class ProctorController {
     @PostMapping("/violation")
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ViolationResponse> logViolation(@RequestBody ViolationRequest request) {
-        ProctorLog log = proctorLogService.logViolation(
-            request.getAttemptId(),
-            request.getEventType(),
-            request.getMetadata()
-        );
+        proctorLogService.logViolation(
+                request.getAttemptId(),
+                request.getEventType(),
+                request.getMetadata());
 
         long violationCount = proctorLogService.getViolationCount(request.getAttemptId());
         boolean shouldAutoSubmit = proctorLogService.checkAutoSubmitThreshold(request.getAttemptId());

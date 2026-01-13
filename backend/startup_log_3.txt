@@ -1,0 +1,98 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2026-01-12 15:26:09 - Starting ExamPortalApplication using Java 17.0.17 with PID 1 (/app/app.jar started by spring in /app)
+2026-01-12 15:26:09 - Running with Spring Boot v3.2.1, Spring v6.1.2
+2026-01-12 15:26:09 - No active profile set, falling back to 1 default profile: "default"
+2026-01-12 15:26:11 - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-12 15:26:11 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-12 15:26:12 - Finished Spring Data repository scanning in 275 ms. Found 10 JPA repository interfaces.
+2026-01-12 15:26:12 - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-12 15:26:12 - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.FailedSubmissionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.QuestionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.TestRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.RoleRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.ScreenRecordingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.StudentAttemptRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.ProctorLogRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.violation.repository.OptimizedViolationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.violation.repository.ViolationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:26:12 - Finished Spring Data repository scanning in 43 ms. Found 0 Redis repository interfaces.
+2026-01-12 15:26:13 - BeanFactory id=0db94add-8b42-3cec-b68a-f65e289e4957
+2026-01-12 15:26:14 - Tomcat initialized with port 8080 (http)
+2026-01-12 15:26:14 - Starting service [Tomcat]
+2026-01-12 15:26:14 - Starting Servlet engine: [Apache Tomcat/10.1.17]
+2026-01-12 15:26:14 - Initializing Spring embedded WebApplicationContext
+2026-01-12 15:26:14 - Root WebApplicationContext: initialization completed in 5035 ms
+2026-01-12 15:26:15 - ExamPortalHikariPool - Starting...
+2026-01-12 15:26:15 - ExamPortalHikariPool - Added connection org.postgresql.jdbc.PgConnection@1f1574c
+2026-01-12 15:26:15 - ExamPortalHikariPool - Start completed.
+2026-01-12 15:26:15 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-12 15:26:15 - HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-01-12 15:26:15 - HHH000026: Second-level cache disabled
+2026-01-12 15:26:16 - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-12 15:26:16 - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-12 15:26:17 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-12 15:26:17 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 15:26:18 - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-12 15:26:18 - Filter 'jwtAuthenticationFilter' configured for use
+2026-01-12 15:26:21 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-12 15:26:22 - Eagerly initializing {securityConfig=com.examportal.config.SecurityConfig$$SpringCGLIB$$0@2b59285c}
+2026-01-12 15:26:23 - Exposing 4 endpoint(s) beneath base path '/actuator'
+2026-01-12 15:26:23 - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@6988cc01, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@68861a31, org.springframework.security.web.context.SecurityContextHolderFilter@1be982b9, org.springframework.security.web.header.HeaderWriterFilter@108f19c7, org.springframework.web.filter.CorsFilter@12f74e98, org.springframework.security.web.authentication.logout.LogoutFilter@60479b63, com.examportal.security.JwtAuthenticationFilter@4b6f196c, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@2823a822, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@1314b8f8, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@2acee481, org.springframework.security.web.session.SessionManagementFilter@546d4a2, org.springframework.security.web.access.ExceptionTranslationFilter@18210306, org.springframework.security.web.access.intercept.AuthorizationFilter@1dabc2f8]
+2026-01-12 15:26:24 - Tomcat started on port 8080 (http) with context path ''
+2026-01-12 15:26:24 - Starting...
+2026-01-12 15:26:24 - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@7c946bca]]
+2026-01-12 15:26:24 - Started.
+2026-01-12 15:26:24 - Attempting to connect to: [rabbitmq:5672]
+2026-01-12 15:26:24 - Created new connection: rabbitConnectionFactory#2b84d474:0/SimpleConnection@4566d9a5 [delegate=amqp://exam_user@172.18.0.9:5672/exam_vhost, localPort=39878]
+2026-01-12 15:26:25 - Started ExamPortalApplication in 16.439 seconds (process running for 17.301)
+2026-01-12 15:26:25 - Database initialization complete!
+
+╔══════════════════════════════════════════════════════════════╗
+║  Exam Portal Backend Started Successfully                    ║
+║  ---------------------------------------------------------- ║
+║  Features Enabled:                                           ║
+║  ✓ Spring Security + JWT                                     ║
+║  ✓ PostgreSQL with HikariCP (Pool: 20)                       ║
+║  ✓ Redis Atomic Counters                                     ║
+║  ✓ RabbitMQ WebSocket Broker                                 ║
+║  ✓ Judge0 Code Execution                                     ║
+║  ✓ Resilience4j Circuit Breaker                              ║
+║  ---------------------------------------------------------- ║
+║  Monitoring: http://localhost:8080/actuator/prometheus       ║
+╚══════════════════════════════════════════════════════════════╝
+
+2026-01-12 15:26:28 - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-12 15:26:28 - Initializing Servlet 'dispatcherServlet'
+2026-01-12 15:26:28 - Completed initialization in 2 ms
+2026-01-12 15:26:28 - Trying to match request against DefaultSecurityFilterChain [RequestMatcher=any request, Filters=[org.springframework.security.web.session.DisableEncodeUrlFilter@6988cc01, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@68861a31, org.springframework.security.web.context.SecurityContextHolderFilter@1be982b9, org.springframework.security.web.header.HeaderWriterFilter@108f19c7, org.springframework.web.filter.CorsFilter@12f74e98, org.springframework.security.web.authentication.logout.LogoutFilter@60479b63, com.examportal.security.JwtAuthenticationFilter@4b6f196c, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@2823a822, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@1314b8f8, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@2acee481, org.springframework.security.web.session.SessionManagementFilter@546d4a2, org.springframework.security.web.access.ExceptionTranslationFilter@18210306, org.springframework.security.web.access.intercept.AuthorizationFilter@1dabc2f8]] (1/1)
+2026-01-12 15:26:28 - Securing GET /actuator/health
+2026-01-12 15:26:28 - Invoking DisableEncodeUrlFilter (1/13)
+2026-01-12 15:26:28 - Invoking WebAsyncManagerIntegrationFilter (2/13)
+2026-01-12 15:26:28 - Invoking SecurityContextHolderFilter (3/13)
+2026-01-12 15:26:28 - Invoking HeaderWriterFilter (4/13)
+2026-01-12 15:26:28 - Invoking CorsFilter (5/13)
+2026-01-12 15:26:28 - Invoking LogoutFilter (6/13)
+2026-01-12 15:26:28 - Did not match request to Or [Ant [pattern='/logout', GET], Ant [pattern='/logout', POST], Ant [pattern='/logout', PUT], Ant [pattern='/logout', DELETE]]
+2026-01-12 15:26:28 - Invoking JwtAuthenticationFilter (7/13)
+2026-01-12 15:26:28 - Invoking RequestCacheAwareFilter (8/13)
+2026-01-12 15:26:28 - Invoking SecurityContextHolderAwareRequestFilter (9/13)
+2026-01-12 15:26:28 - Invoking AnonymousAuthenticationFilter (10/13)
+2026-01-12 15:26:28 - Invoking SessionManagementFilter (11/13)
+2026-01-12 15:26:28 - Created SecurityContextImpl [Null authentication]
+2026-01-12 15:26:28 - Set SecurityContextHolder to AnonymousAuthenticationToken [Principal=anonymousUser, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_ANONYMOUS]]
+2026-01-12 15:26:28 - Invoking ExceptionTranslationFilter (12/13)
+2026-01-12 15:26:28 - Invoking AuthorizationFilter (13/13)
+2026-01-12 15:26:28 - Authorizing SecurityContextHolderAwareRequestWrapper[ org.springframework.security.web.header.HeaderWriterFilter$HeaderWriterRequest@28c6d458]
+2026-01-12 15:26:28 - Checking authorization on SecurityContextHolderAwareRequestWrapper[ org.springframework.security.web.header.HeaderWriterFilter$HeaderWriterRequest@28c6d458] using org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer$$Lambda$1958/0x000073c78ddc7ac0@5b9dcb03
+2026-01-12 15:26:28 - Secured GET /actuator/health
+2026-01-12 15:26:29 - Not injecting HSTS header since it did not match request to [Is Secure]

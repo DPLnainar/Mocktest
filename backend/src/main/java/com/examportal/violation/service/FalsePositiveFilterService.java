@@ -42,9 +42,9 @@ public class FalsePositiveFilterService {
         }
 
         // Phase 8: Check consecutive frames
-        if (request.getConsecutiveFrames() != null && 
-            request.getConsecutiveFrames() < MIN_CONSECUTIVE_FRAMES) {
-            log.debug("Rejecting violation - insufficient consecutive frames: {}", 
+        if (request.getConsecutiveFrames() != null &&
+                request.getConsecutiveFrames() < MIN_CONSECUTIVE_FRAMES) {
+            log.debug("Rejecting violation - insufficient consecutive frames: {}",
                     request.getConsecutiveFrames());
             return false;
         }
@@ -65,10 +65,14 @@ public class FalsePositiveFilterService {
     public int incrementConsecutiveDetection(Long sessionId, String violationType) {
         String key = CONSECUTIVE_FRAME_PREFIX + sessionId + ":" + violationType;
         Long count = redisTemplate.opsForValue().increment(key);
-        
+
+        if (count == null) {
+            return 0; // Should not happen with increment, but safe fallback
+        }
+
         // Expire after 5 seconds (if no new detections, reset)
         redisTemplate.expire(key, 5, TimeUnit.SECONDS);
-        
+
         return count.intValue();
     }
 

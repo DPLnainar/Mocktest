@@ -40,10 +40,7 @@ INSERT INTO roles (name, description) VALUES
     ('ADMIN', 'Admin role - full system access')
 ON CONFLICT (name) DO NOTHING;
 
--- Insert default admin user (password: Admin@123)
-INSERT INTO users (email, password, full_name, department, enabled, account_non_locked) VALUES
-    ('admin@examportal.com', '$2a$10$YourBcryptHashHere', 'System Administrator', 'ADMIN', true, true)
-ON CONFLICT (email) DO NOTHING;
+-- Default admin user is handled by DatabaseInitializer.java to ensure correct BCrypt encoding
 
 COMMENT ON TABLE users IS 'All system users: students, moderators, admins';
 COMMENT ON TABLE roles IS 'Role hierarchy: STUDENT < MODERATOR < ADMIN';

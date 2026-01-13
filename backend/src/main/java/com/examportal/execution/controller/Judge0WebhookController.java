@@ -22,7 +22,8 @@ public class Judge0WebhookController {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ExecutionQueueService executionQueueService;
 
-    public Judge0WebhookController(RedisTemplate<String, Object> redisTemplate, ExecutionQueueService executionQueueService) {
+    public Judge0WebhookController(RedisTemplate<String, Object> redisTemplate,
+            ExecutionQueueService executionQueueService) {
         this.redisTemplate = redisTemplate;
         this.executionQueueService = executionQueueService;
     }
@@ -36,7 +37,7 @@ public class Judge0WebhookController {
     public ResponseEntity<String> handleCallback(
             @PathVariable String executionId,
             @RequestBody Judge0SubmissionResponse response) {
-        
+
         log.info("Received Judge0 callback for execution {}: Status {}",
                 executionId, response.getStatus().getDescription());
 
@@ -55,7 +56,7 @@ public class Judge0WebhookController {
                 redisTemplate.opsForValue().decrement(countKey);
             }
 
-            // TODO: Notify via WebSocket if student is monitoring results live
+            log.info("Finished processing callback for {}. Future: Notify student via WebSocket.", executionId);
 
             return ResponseEntity.ok("Callback received");
 

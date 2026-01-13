@@ -53,7 +53,7 @@ public class PythonParserService implements ParserService {
         }
 
         result.setParsingTimeMs(System.currentTimeMillis() - startTime);
-        log.debug("Python code verification completed in {}ms. Passed: {}", 
+        log.debug("Python code verification completed in {}ms. Passed: {}",
                 result.getParsingTimeMs(), result.isPassed());
 
         return result;
@@ -69,23 +69,23 @@ public class PythonParserService implements ParserService {
                 break;
 
             case "list_comprehension":
-                checkForbiddenConstruct(code, lines, rule, 
-                    Pattern.compile("\\[[^\\]]*for\\s+\\w+\\s+in[^\\]]*\\]"), 
-                    "list comprehension", result);
+                checkForbiddenConstruct(code, lines, rule,
+                        Pattern.compile("\\[[^\\]]*for\\s+\\w+\\s+in[^\\]]*\\]"),
+                        "list comprehension", result);
                 break;
 
             case "for_loop":
             case "for loop":
-                checkForbiddenConstruct(code, lines, rule, 
-                    Pattern.compile("\\bfor\\s+\\w+\\s+in\\b"), 
-                    "for loop", result);
+                checkForbiddenConstruct(code, lines, rule,
+                        Pattern.compile("\\bfor\\s+\\w+\\s+in\\b"),
+                        "for loop", result);
                 break;
 
             case "while_loop":
             case "while loop":
-                checkForbiddenConstruct(code, lines, rule, 
-                    Pattern.compile("\\bwhile\\s+"), 
-                    "while loop", result);
+                checkForbiddenConstruct(code, lines, rule,
+                        Pattern.compile("\\bwhile\\s+"),
+                        "while loop", result);
                 break;
 
             case "recursion":
@@ -113,25 +113,25 @@ public class PythonParserService implements ParserService {
 
         java.util.regex.Matcher matcher = sortedPattern.matcher(code);
         if (matcher.find()) {
-            addViolation(code, lines, rule, matcher.start(), 
-                "Forbidden: sorted() function detected", result);
+            addViolation(code, lines, rule, matcher.start(),
+                    "Forbidden: sorted() function detected", result);
             return;
         }
 
         matcher = sortMethodPattern.matcher(code);
         if (matcher.find()) {
-            addViolation(code, lines, rule, matcher.start(), 
-                "Forbidden: .sort() method detected", result);
+            addViolation(code, lines, rule, matcher.start(),
+                    "Forbidden: .sort() method detected", result);
         }
     }
 
-    private void checkForbiddenConstruct(String code, String[] lines, VerificationRule rule, 
-                                        Pattern pattern, String constructName, VerificationResult result) {
+    private void checkForbiddenConstruct(String code, String[] lines, VerificationRule rule,
+            Pattern pattern, String constructName, VerificationResult result) {
         java.util.regex.Matcher matcher = pattern.matcher(code);
         if (matcher.find()) {
-            addViolation(code, lines, rule, matcher.start(), 
-                String.format("Forbidden: %s detected. %s", constructName, rule.getErrorMessage()), 
-                result);
+            addViolation(code, lines, rule, matcher.start(),
+                    String.format("Forbidden: %s detected. %s", constructName, rule.getErrorMessage()),
+                    result);
         }
     }
 
@@ -144,10 +144,11 @@ public class PythonParserService implements ParserService {
         while (funcMatcher.find()) {
             String funcName = funcMatcher.group(1);
             int funcStart = funcMatcher.end();
-            
+
             // Find function end (simplified - looks for next def or end of file)
             int funcEnd = code.indexOf("\ndef ", funcStart);
-            if (funcEnd == -1) funcEnd = code.length();
+            if (funcEnd == -1)
+                funcEnd = code.length();
 
             String funcBody = code.substring(funcStart, funcEnd);
             Pattern callPattern = Pattern.compile("\\b" + funcName + "\\s*\\(");
@@ -162,9 +163,8 @@ public class PythonParserService implements ParserService {
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
-                    .message(rule.getErrorMessage() != null ? 
-                            rule.getErrorMessage() : 
-                            "Required: Solution must use recursion")
+                    .message(rule.getErrorMessage() != null ? rule.getErrorMessage()
+                            : "Required: Solution must use recursion")
                     .build());
         }
     }
@@ -172,10 +172,10 @@ public class PythonParserService implements ParserService {
     private void checkBubbleSortLogic(String code, String[] lines, VerificationRule rule, VerificationResult result) {
         // Check for nested loops
         Pattern nestedLoopPattern = Pattern.compile("for\\s+\\w+\\s+in[^:]+:[^f]*for\\s+\\w+\\s+in", Pattern.DOTALL);
-        
+
         boolean hasNestedLoops = nestedLoopPattern.matcher(code).find();
         boolean hasSwapping = Pattern.compile("\\w+\\s*,\\s*\\w+\\s*=\\s*\\w+\\s*,\\s*\\w+").matcher(code).find() ||
-                            code.contains("temp");
+                code.contains("temp");
 
         if (!hasNestedLoops || !hasSwapping) {
             result.getViolations().add(VerificationResult.Violation.builder()
@@ -187,34 +187,33 @@ public class PythonParserService implements ParserService {
         }
     }
 
-    private void checkForbiddenPattern(String code, String[] lines, VerificationRule rule, 
-                                      Pattern pattern, VerificationResult result) {
+    private void checkForbiddenPattern(String code, String[] lines, VerificationRule rule,
+            Pattern pattern, VerificationResult result) {
         java.util.regex.Matcher matcher = pattern.matcher(code);
         if (matcher.find()) {
-            addViolation(code, lines, rule, matcher.start(), 
-                rule.getErrorMessage() != null ? rule.getErrorMessage() : 
-                "Forbidden construct found: " + rule.getConstruct(), 
-                result);
+            addViolation(code, lines, rule, matcher.start(),
+                    rule.getErrorMessage() != null ? rule.getErrorMessage()
+                            : "Forbidden construct found: " + rule.getConstruct(),
+                    result);
         }
     }
 
-    private void checkRequiredPattern(String code, String[] lines, VerificationRule rule, 
-                                     Pattern pattern, VerificationResult result) {
+    private void checkRequiredPattern(String code, String[] lines, VerificationRule rule,
+            Pattern pattern, VerificationResult result) {
         java.util.regex.Matcher matcher = pattern.matcher(code);
         if (!matcher.find() && rule.getType() == VerificationRule.RuleType.REQUIRED) {
             result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
-                    .message(rule.getErrorMessage() != null ? 
-                            rule.getErrorMessage() : 
-                            "Required construct not found: " + rule.getConstruct())
+                    .message(rule.getErrorMessage() != null ? rule.getErrorMessage()
+                            : "Required construct not found: " + rule.getConstruct())
                     .build());
         }
     }
 
-    private void addViolation(String code, String[] lines, VerificationRule rule, 
-                             int position, String message, VerificationResult result) {
+    private void addViolation(String code, String[] lines, VerificationRule rule,
+            int position, String message, VerificationResult result) {
         int lineNumber = getLineNumber(code, position);
         String snippet = lines[lineNumber - 1].trim();
 
@@ -240,29 +239,37 @@ public class PythonParserService implements ParserService {
     public boolean hasSyntaxErrors(String code) {
         try {
             // Basic Python syntax checks
-            int indentLevel = 0;
             String[] lines = code.split("\n");
 
             for (String line : lines) {
-                String trimmed = line.trim();
-                if (trimmed.isEmpty() || trimmed.startsWith("#")) continue;
+                // Check for basic indentation consistency (Placeholder for future
+                // implementation)
 
-                // Check for basic indentation consistency
-                int leadingSpaces = line.length() - line.stripLeading().length();
-                
                 // Check for mismatched parentheses, brackets, braces
                 int parenCount = 0, bracketCount = 0, braceCount = 0;
                 for (char c : line.toCharArray()) {
                     switch (c) {
-                        case '(': parenCount++; break;
-                        case ')': parenCount--; break;
-                        case '[': bracketCount++; break;
-                        case ']': bracketCount--; break;
-                        case '{': braceCount++; break;
-                        case '}': braceCount--; break;
+                        case '(':
+                            parenCount++;
+                            break;
+                        case ')':
+                            parenCount--;
+                            break;
+                        case '[':
+                            bracketCount++;
+                            break;
+                        case ']':
+                            bracketCount--;
+                            break;
+                        case '{':
+                            braceCount++;
+                            break;
+                        case '}':
+                            braceCount--;
+                            break;
                     }
                 }
-                
+
                 if (parenCount < 0 || bracketCount < 0 || braceCount < 0) {
                     return true; // Syntax error
                 }

@@ -1,0 +1,129 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.examportal:exam-portal-backend >-----------------
+[INFO] Building Exam Portal Backend 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.1:run (default-cli) > test-compile @ exam-portal-backend >>>
+[INFO] 
+[INFO] --- antlr4:4.13.1:antlr4 (default) @ exam-portal-backend ---
+[INFO] No ANTLR 4 grammars to compile in C:\Users\ganes\OneDrive\Desktop\mock test\backend\src\main\antlr4
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ exam-portal-backend ---
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ exam-portal-backend ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 105 source files with javac [debug release 17] to target\classes
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/entity/User.java:[36,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/entity/User.java:[41,27] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/entity/ProctorLog.java:[44,33] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/entity/Test.java:[48,27] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/violation/entity/Violation.java:[46,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/violation/entity/Violation.java:[47,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/entity/StudentAttempt.java:[47,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/entity/StudentAttempt.java:[48,21] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/entity/StudentAttempt.java:[53,33] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[WARNING] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/entity/StudentAttempt.java:[58,33] @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+[INFO] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/parser/pool/ParserPool.java: C:\Users\ganes\OneDrive\Desktop\mock test\backend\src\main\java\com\examportal\parser\pool\ParserPool.java uses or overrides a deprecated API.
+[INFO] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/parser/pool/ParserPool.java: Recompile with -Xlint:deprecation for details.
+[INFO] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/violation/service/ViolationService.java: C:\Users\ganes\OneDrive\Desktop\mock test\backend\src\main\java\com\examportal\violation\service\ViolationService.java uses unchecked or unsafe operations.
+[INFO] /C:/Users/ganes/OneDrive/Desktop/mock test/backend/src/main/java/com/examportal/violation/service/ViolationService.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ exam-portal-backend ---
+[INFO] skip non existing resourceDirectory C:\Users\ganes\OneDrive\Desktop\mock test\backend\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ exam-portal-backend ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 1 source file with javac [debug release 17] to target\test-classes
+[INFO] 
+[INFO] <<< spring-boot:3.2.1:run (default-cli) < test-compile @ exam-portal-backend <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.1:run (default-cli) @ exam-portal-backend ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2026-01-06 08:11:48 - Starting ExamPortalApplication using Java 17.0.12 with PID 34976 (C:\Users\ganes\OneDrive\Desktop\mock test\backend\target\classes started by ganes in C:\Users\ganes\OneDrive\Desktop\mock test\backend)
+2026-01-06 08:11:48 - Running with Spring Boot v3.2.1, Spring v6.1.2
+2026-01-06 08:11:48 - No active profile set, falling back to 1 default profile: "default"
+2026-01-06 08:11:51 - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-06 08:11:51 - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-06 08:11:51 - Finished Spring Data repository scanning in 337 ms. Found 9 JPA repository interfaces.
+2026-01-06 08:11:51 - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-01-06 08:11:51 - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.ProctorLogRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.QuestionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.RoleRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.ScreenRecordingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.StudentAttemptRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.TestRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.violation.repository.OptimizedViolationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.violation.repository.ViolationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-06 08:11:51 - Finished Spring Data repository scanning in 15 ms. Found 0 Redis repository interfaces.
+2026-01-06 08:11:52 - BeanFactory id=21d56b53-19b2-37d9-aac0-a2f700df998a
+2026-01-06 08:11:54 - Tomcat initialized with port 8080 (http)
+2026-01-06 08:11:54 - Starting service [Tomcat]
+2026-01-06 08:11:54 - Starting Servlet engine: [Apache Tomcat/10.1.17]
+2026-01-06 08:11:54 - Initializing Spring embedded WebApplicationContext
+2026-01-06 08:11:54 - Root WebApplicationContext: initialization completed in 5956 ms
+2026-01-06 08:11:54 - ExamPortalHikariPool - Starting...
+2026-01-06 08:11:55 - ExamPortalHikariPool - Added connection org.postgresql.jdbc.PgConnection@7b8d6c66
+2026-01-06 08:11:55 - ExamPortalHikariPool - Start completed.
+2026-01-06 08:11:55 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-06 08:11:55 - HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-01-06 08:11:55 - HHH000026: Second-level cache disabled
+2026-01-06 08:11:56 - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-06 08:11:56 - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-06 08:11:59 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-06 08:11:59 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-06 08:12:00 - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-06 08:12:00 - Filter 'jwtAuthenticationFilter' configured for use
+2026-01-06 08:12:01 - Eagerly initializing {securityConfig=com.examportal.security.SecurityConfig$$SpringCGLIB$$0@19adcb41}
+2026-01-06 08:12:02 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-06 08:12:07 - Exposing 4 endpoint(s) beneath base path '/actuator'
+2026-01-06 08:12:07 - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2d7a012c, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@30952535, org.springframework.security.web.context.SecurityContextHolderFilter@44eebd9f, org.springframework.security.web.header.HeaderWriterFilter@3dc4e185, org.springframework.web.filter.CorsFilter@517c30f, org.springframework.security.web.authentication.logout.LogoutFilter@49e018f0, com.examportal.security.JwtAuthenticationFilter@3cfd9459, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@53e759b1, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@1d1b458e, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5f049fa, org.springframework.security.web.session.SessionManagementFilter@3b3cc6b1, org.springframework.security.web.access.ExceptionTranslationFilter@4827711c, org.springframework.security.web.access.intercept.AuthorizationFilter@76bfd311]
+2026-01-06 08:12:10 - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2026-01-06 08:12:10 - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-06 08:12:10 - ExamPortalHikariPool - Shutdown initiated...
+2026-01-06 08:12:10 - ExamPortalHikariPool - Shutdown completed.
+2026-01-06 08:12:10 - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-06 08:12:10 - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  47.079 s
+[INFO] Finished at: 2026-01-06T08:12:11+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.1:run (default-cli) on project exam-portal-backend: Process terminated with exit code: 1 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

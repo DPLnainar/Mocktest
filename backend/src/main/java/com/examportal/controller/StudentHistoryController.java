@@ -1,6 +1,5 @@
 package com.examportal.controller;
 
-import com.examportal.entity.StudentAttempt;
 import com.examportal.service.StudentHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +18,8 @@ public class StudentHistoryController {
     private final StudentHistoryService historyService;
 
     @GetMapping
-    public ResponseEntity<List<StudentAttempt>> getHistory() {
-        List<StudentAttempt> history = historyService.getStudentHistory();
+    public ResponseEntity<List<Map<String, Object>>> getHistory() {
+        List<Map<String, Object>> history = historyService.getStudentHistory();
         return ResponseEntity.ok(history);
     }
 

@@ -6,21 +6,27 @@ import org.slf4j.LoggerFactory;
 
 @Service
 public class ModeratorMonitoringService {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ModeratorMonitoringService.class);
-    
+
+    private final SessionManagerService sessionManager;
+
+    public ModeratorMonitoringService(SessionManagerService sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+
     public void handleModeratorConnect(String moderatorId, Long examId) {
         log.info("Moderator {} connected to exam {}", moderatorId, examId);
-        // TODO: Restore SessionManager integration
     }
-    
+
     public void terminateStudent(Long sessionId, String reason, String moderatorId) {
         log.warn("Moderator {} terminating session {} - Reason: {}", moderatorId, sessionId, reason);
-        // TODO: Restore SessionManager integration
+        sessionManager.terminateSession(sessionId);
     }
-    
+
     public void sendWarning(Long sessionId, String message, String moderatorId) {
         log.info("Moderator {} sending warning to session {}: {}", moderatorId, sessionId, message);
-        // TODO: Restore SessionManager integration
+        // Warning logic handled by broadcast service, SessionManager update not
+        // strictly required here
     }
 }

@@ -16,7 +16,7 @@ services:
     networks:
       - exam-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U exam_admin"]
+      test: [ "CMD-SHELL", "pg_isready -U exam_admin" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,7 +33,7 @@ services:
       - exam-network
     command: redis-server --appendonly yes
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -47,14 +47,14 @@ services:
       RABBITMQ_DEFAULT_PASS: exam_password
       RABBITMQ_DEFAULT_VHOST: exam_vhost
     ports:
-      - "5672:5672"   # AMQP port
+      - "5672:5672" # AMQP port
       - "15672:15672" # Management UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - exam-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -72,7 +72,7 @@ services:
     networks:
       - exam-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U judge0"]
+      test: [ "CMD-SHELL", "pg_isready -U judge0" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -155,8 +155,8 @@ services:
   # Judge0 Workers (for parallel execution)
   judge0-workers:
     image: judge0/judge0:1.13.0
-    privileged: true  # Required for sandboxing (use gVisor/kata-containers in production)
-    command: ["./scripts/workers"]
+    privileged: true # Required for sandboxing (use gVisor/kata-containers in production)
+    command: [ "./scripts/workers" ]
     volumes:
       - ./judge0.conf:/judge0.conf:ro
     networks:
@@ -177,7 +177,28 @@ services:
         condition: service_started
     restart: unless-stopped
     deploy:
-      replicas: 2  # Run 2 worker instances
+      replicas: 2 # Run 2 worker instances
+
+  # MinIO for Object Storage
+  minio:
+    image: minio/minio
+    container_name: exam-portal-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - exam-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
 volumes:
   postgres_data:
@@ -185,6 +206,8 @@ volumes:
   rabbitmq_data:
   judge0_db_data:
   judge0_redis_data:
+  minio_data:
+
 
 networks:
   exam-network:

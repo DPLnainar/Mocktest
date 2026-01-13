@@ -18,14 +18,26 @@ public class CodeVerificationController {
     private final CodeVerificationService codeVerificationService;
 
     @PostMapping("/verify")
-    public ResponseEntity<CodeVerificationResult> verifyCode(@RequestBody Map<String, String> request) {
-        String code = request.get("code");
-        String language = request.get("language");
+    public ResponseEntity<CodeVerificationResult> verifyCode(@RequestBody Map<String, Object> request) {
+        String code = (String) request.get("code");
+        String language = (String) request.get("language");
+
+        // Extract constraints safely
+        @SuppressWarnings("unchecked")
+        Map<String, Boolean> constraints = (Map<String, Boolean>) request.get("constraints");
+        if (constraints == null) {
+            constraints = java.util.Collections.emptyMap();
+        }
+
+        // Extract allowedLanguageIds safely
+        @SuppressWarnings("unchecked")
+        java.util.List<Integer> allowedLanguageIds = (java.util.List<Integer>) request.get("allowedLanguageIds");
 
         log.info("Verifying code for language: {}", language);
-        
-        CodeVerificationResult result = codeVerificationService.verifyCode(code, language);
-        
+
+        CodeVerificationResult result = codeVerificationService.verifyCode(code, language, constraints,
+                allowedLanguageIds);
+
         return ResponseEntity.ok(result);
     }
 }

@@ -7,21 +7,23 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import java.time.Duration; // Explicitly adding import if not present, but better to add at top. Wait, I can't easily add import at top with this tool unless I include file start.
 import java.util.function.Supplier;
 
 /**
  * Parser Pool using Apache Commons Pool2
  * 
- * Provides object pooling for ANTLR parsers to achieve <200ms parsing performance
+ * Provides object pooling for ANTLR parsers to achieve <200ms parsing
+ * performance
  * Parsers are expensive to create, so we reuse them
  * 
  * Usage:
- *   Parser parser = parserPool.borrowObject();
- *   try {
- *       // Use parser
- *   } finally {
- *       parserPool.returnObject(parser);
- *   }
+ * Parser parser = parserPool.borrowObject();
+ * try {
+ * // Use parser
+ * } finally {
+ * parserPool.returnObject(parser);
+ * }
  */
 public class ParserPool<T extends Parser> {
 
@@ -35,7 +37,7 @@ public class ParserPool<T extends Parser> {
         config.setTestOnBorrow(false);
         config.setTestOnReturn(false);
         config.setBlockWhenExhausted(true);
-        config.setMaxWaitMillis(5000);
+        config.setMaxWait(Duration.ofMillis(5000));
 
         this.pool = new GenericObjectPool<>(new ParserObjectFactory<>(parserFactory), config);
     }

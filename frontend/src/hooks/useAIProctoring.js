@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import * as faceapi from 'face-api.js';
+import * as faceapi from '@vladmandic/face-api/dist/face-api.esm-nobundle.js';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
-import '@tensorflow/tfjs';
+
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -25,21 +25,37 @@ export const useAIProctoring = (attemptId, isActive = true) => {
 
         const loadModels = async () => {
             try {
+                // Check if models are already loaded to prevent reloading
+                if (faceapi.nets.tinyFaceDetector.isLoaded && objectDetectionModel.current) {
+                    setModelsLoaded(true);
+                    return;
+                }
+
                 console.log('Loading AI proctoring models...');
 
                 // Load face-api.js models from CDN
                 const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
-                await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+
+                if (!faceapi.nets.tinyFaceDetector.isLoaded) {
+                    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+                }
 
                 // Load COCO-SSD model
-                objectDetectionModel.current = await cocoSsd.load();
+                if (!objectDetectionModel.current) {
+                    objectDetectionModel.current = await cocoSsd.load();
+                }
 
                 setModelsLoaded(true);
                 console.log('AI models loaded successfully');
                 toast.success('AI proctoring activated');
             } catch (error) {
                 console.error('Failed to load AI models:', error);
-                toast.error('AI proctoring unavailable');
+
+                // Don't show error if it's just a backend re-registration warning that threw an error
+                // (though usually those are just warnings, actual errors should be shown)
+                if (!error.message?.includes('already registered')) {
+                    toast.error('AI proctoring unavailable');
+                }
             }
         };
 

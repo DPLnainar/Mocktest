@@ -1,120 +1,95 @@
-# Enterprise Examination & Placement Portal
+# Exam Portal - Quick Start Guide
 
-A fortress-grade, real-time examination platform with logic verification, live proctoring, and zero-tolerance security.
+## 🚀 Start the Application (One Command!)
 
-## ✅ Phase 7 Complete - Full-Stack Implementation
-
-**Student Exam Interface:** Monaco Editor + TensorFlow.js Camera + IndexedDB Auto-Save + WebSocket Real-Time + Offline Support
-
-See [PHASE_7_REACT_INTERFACE.md](PHASE_7_REACT_INTERFACE.md) for complete frontend documentation.
-
-## 🏗️ Architecture
-
-### Backend Stack
-- **Spring Boot 3.2** (Java 17+) - High concurrency & stability
-- **Spring Security + JWT** - Stateless authentication
-- **ANTLR 4** - Code logic verification (USP)
-- **WebSocket (STOMP + RabbitMQ)** - Real-time monitoring
-- **PostgreSQL** - ACID-compliant data integrity
-- **Redis** - Atomic counters & session storage
-- **Judge0** - Sandboxed code execution
-
-### Frontend Stack
-- **React 18 + Vite** - Fast, responsive UI
-- **Monaco Editor** - VS Code-like coding experience
-- **TensorFlow.js (Coco-SSD)** - Client-side AI detection
-- **IndexedDB** - Offline-first resilience
-
-## 🚀 Key Features
-
-### 1. Logic Integrity Verification
-Uses ANTLR parsers to detect forbidden constructs (e.g., `.sort()` when Bubble Sort required)
-
-### 2. Real-Time Proctoring
-- Live moderator dashboard with <1s latency
-- Color-coded student status (Green/Yellow/Red)
-- Automated violation detection
-
-### 3. Security Fortress
-- Tab switching detection
-- AI-powered phone/multiple face detection
-- Automated exam termination (5-strike rule)
-
-### 4. Scalability
-- Horizontal scaling with RabbitMQ
-- Redis atomic counters for race-free violation tracking
-- Connection pooling for 500+ concurrent students
-
-### 5. Network Resilience
-- IndexedDB offline-first architecture
-- Auto-save every 5 seconds
-- Zero data loss during Wi-Fi flickers
-
-## 📂 Project Structure
-
-```
-exam-portal/
-├── backend/           # Spring Boot application
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/
-│   │   │   └── antlr4/
-│   │   └── resources/
-│   ├── docker-compose.yml
-│   └── pom.xml
-│
-└── frontend/          # React + Vite application
-    ├── src/
-    │   ├── components/
-    │   ├── services/
-    │   ├── hooks/
-    │   └── utils/
-    └── package.json
+```powershell
+.\start-app.ps1
 ```
 
-## 🔧 Setup Instructions
-
-### Prerequisites
-- Java 17+
-- Node.js 18+
-- Docker & Docker Compose
-- PostgreSQL 15+
-
-### Backend Setup
-```bash
-cd backend
-mvn clean install
-docker-compose up -d
-mvn spring-boot:run
-```
-
-### Frontend Setup
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## 🎯 Performance Targets
-
-- **Parsing**: <200ms per submission
-- **Monitoring Latency**: <1s for status updates
-- **Auto-Save**: 5s intervals
-- **Network Recovery**: <3s reconnection
-
-## 🔐 Security Highlights
-
-- Sandboxed code execution (seccomp, cgroups)
-- Department-level data isolation
-- Evidence-based violation snapshots (GDPR-compliant)
-- Debounced false-positive detection
-
-## 📊 Monitoring
-
-- Prometheus + Grafana for metrics
-- ELK Stack for centralized logging
-- Real-time violation rate tracking
+**That's it!** This single command will:
+- ✅ Check if Docker is running
+- ✅ Start all backend services (Database, Redis, RabbitMQ, Judge0, Backend API)
+- ✅ Wait for backend to be ready
+- ✅ Start the frontend
+- ✅ Open your browser automatically
 
 ---
 
-**Built for Universities and Companies demanding exam integrity at scale.**
+## 🛑 Stop the Application
+
+```powershell
+.\stop-app.ps1
+```
+
+---
+
+## 📋 What You Need
+
+Before running the app, make sure:
+1. **Docker Desktop is running** (it should auto-start with Windows)
+2. That's it! Everything else is handled automatically.
+
+---
+
+## 🔧 Troubleshooting
+
+### "Docker is not running"
+- Open Docker Desktop and wait for it to start
+- Run `.\start-app.ps1` again
+
+### Port 8080 or 5173 already in use
+- Run `.\stop-app.ps1` first
+- Then run `.\start-app.ps1` again
+
+### Frontend won't start
+- The script will open a new window for the frontend
+- If it fails, manually run: `cd frontend; npm run dev`
+
+---
+
+## 📁 Project Structure
+
+```
+mock test/
+├── start-app.ps1          ← START HERE!
+├── stop-app.ps1           ← Stop everything
+├── backend/
+│   ├── start-backend.ps1  ← Backend only (if needed)
+│   └── docker-compose.yml
+└── frontend/
+    └── package.json
+```
+
+---
+
+## 🌐 Access Points
+
+After starting:
+- **Application**: http://localhost:5173
+- **Backend API**: http://localhost:8080
+- **RabbitMQ Admin**: http://localhost:15672 (user: exam_user, pass: exam_password)
+
+---
+
+## 💡 Tips
+
+- **First time setup**: The script will install npm dependencies automatically
+- **After reboot**: Just run `.\start-app.ps1` - everything persists in Docker volumes
+- **View logs**: `docker logs exam-portal-backend -f`
+- **Restart backend only**: `docker restart exam-portal-backend`
+
+---
+
+## ⚡ Quick Commands Reference
+
+| Action | Command |
+|--------|---------|
+| Start everything | `.\start-app.ps1` |
+| Stop everything | `.\stop-app.ps1` |
+| View backend logs | `docker logs exam-portal-backend -f` |
+| Restart backend | `docker restart exam-portal-backend` |
+| Check running services | `docker ps` |
+
+---
+
+**Need help?** Check `backend/STARTUP_GUIDE.md` for detailed information.

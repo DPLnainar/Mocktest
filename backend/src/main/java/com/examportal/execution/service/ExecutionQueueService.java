@@ -32,23 +32,26 @@ public class ExecutionQueueService {
     /**
      * Queue an execution for later polling
      * 
-     * @param executionId Unique execution ID
+     * @param executionId     Unique execution ID
      * @param submissionToken Judge0 submission token
-     * @param studentId Student ID
+     * @param studentId       Student ID
      */
     public void queueExecution(String executionId, String submissionToken, Long studentId) {
         try {
             // Store submission token
             String tokenKey = TOKEN_PREFIX + executionId;
-            redisTemplate.opsForValue().set(tokenKey, submissionToken, TTL_HOURS, TimeUnit.HOURS);
+            redisTemplate.opsForValue().set(java.util.Objects.requireNonNull(tokenKey),
+                    java.util.Objects.requireNonNull(submissionToken), TTL_HOURS, TimeUnit.HOURS);
 
             // Store student ID
             String studentKey = STUDENT_PREFIX + executionId;
-            redisTemplate.opsForValue().set(studentKey, studentId.toString(), TTL_HOURS, TimeUnit.HOURS);
+            redisTemplate.opsForValue().set(java.util.Objects.requireNonNull(studentKey),
+                    java.util.Objects.requireNonNull(studentId.toString()), TTL_HOURS, TimeUnit.HOURS);
 
             // Add to queue (sorted set with timestamp)
             String queueKey = QUEUE_PREFIX + "pending";
-            redisTemplate.opsForZSet().add(queueKey, executionId, System.currentTimeMillis());
+            redisTemplate.opsForZSet().add(java.util.Objects.requireNonNull(queueKey),
+                    java.util.Objects.requireNonNull(executionId), System.currentTimeMillis());
 
             log.debug("Queued execution {} for student {}", executionId, studentId);
 

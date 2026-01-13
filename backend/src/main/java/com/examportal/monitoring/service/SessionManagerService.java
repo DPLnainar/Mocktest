@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * Session Manager Service
@@ -40,25 +41,39 @@ public class SessionManagerService {
      */
     public void createSession(ExamSession session) {
         String sessionKey = SESSION_PREFIX + session.getId();
-        
+
         // Store session data
-        redisTemplate.opsForHash().put(sessionKey, "studentId", session.getStudentId());
-        redisTemplate.opsForHash().put(sessionKey, "examId", session.getExamId());
-        redisTemplate.opsForHash().put(sessionKey, "examTitle", session.getExamTitle());
-        redisTemplate.opsForHash().put(sessionKey, "studentName", session.getStudentName());
-        redisTemplate.opsForHash().put(sessionKey, "department", session.getDepartment());
-        redisTemplate.opsForHash().put(sessionKey, "status", session.getStatus().name());
-        redisTemplate.opsForHash().put(sessionKey, "violationCount", session.getViolationCount());
-        redisTemplate.opsForHash().put(sessionKey, "startedAt", session.getStartedAt().toString());
-        redisTemplate.opsForHash().put(sessionKey, "expiresAt", session.getExpiresAt().toString());
-        redisTemplate.opsForHash().put(sessionKey, "lastHeartbeat", LocalDateTime.now().toString());
-        
+        if (session.getStudentId() != null)
+            redisTemplate.opsForHash().put(sessionKey, "studentId", Objects.requireNonNull(session.getStudentId()));
+        if (session.getExamId() != null)
+            redisTemplate.opsForHash().put(sessionKey, "examId", Objects.requireNonNull(session.getExamId()));
+        if (session.getExamTitle() != null)
+            redisTemplate.opsForHash().put(sessionKey, "examTitle", Objects.requireNonNull(session.getExamTitle()));
+        if (session.getStudentName() != null)
+            redisTemplate.opsForHash().put(sessionKey, "studentName", Objects.requireNonNull(session.getStudentName()));
+        if (session.getDepartment() != null)
+            redisTemplate.opsForHash().put(sessionKey, "department", Objects.requireNonNull(session.getDepartment()));
+        if (session.getStatus() != null)
+            redisTemplate.opsForHash().put(sessionKey, "status", Objects.requireNonNull(session.getStatus().name()));
+        redisTemplate.opsForHash().put(sessionKey, "violationCount",
+                Objects.requireNonNull(session.getViolationCount()));
+        if (session.getStartedAt() != null)
+            redisTemplate.opsForHash().put(sessionKey, "startedAt",
+                    Objects.requireNonNull(session.getStartedAt().toString()));
+        if (session.getExpiresAt() != null)
+            redisTemplate.opsForHash().put(sessionKey, "expiresAt",
+                    Objects.requireNonNull(session.getExpiresAt().toString()));
+        redisTemplate.opsForHash().put(sessionKey, "lastHeartbeat",
+                Objects.requireNonNull(LocalDateTime.now().toString()));
+
         if (session.getWebSocketSessionId() != null) {
-            redisTemplate.opsForHash().put(sessionKey, "webSocketSessionId", session.getWebSocketSessionId());
-            
+            redisTemplate.opsForHash().put(sessionKey, "webSocketSessionId",
+                    Objects.requireNonNull(session.getWebSocketSessionId()));
+
             // Map WebSocket session to exam session
             String wsKey = WEBSOCKET_PREFIX + session.getWebSocketSessionId();
-            redisTemplate.opsForValue().set(wsKey, session.getId(), SESSION_TTL_HOURS, TimeUnit.HOURS);
+            redisTemplate.opsForValue().set(wsKey, Objects.requireNonNull(session.getId()), SESSION_TTL_HOURS,
+                    TimeUnit.HOURS);
         }
 
         // Add to active sessions set
@@ -75,7 +90,7 @@ public class SessionManagerService {
      */
     public ExamSession getSession(Long sessionId) {
         String sessionKey = SESSION_PREFIX + sessionId;
-        
+
         if (!redisTemplate.hasKey(sessionKey)) {
             return null;
         }
@@ -89,12 +104,13 @@ public class SessionManagerService {
             session.setStudentName((String) redisTemplate.opsForHash().get(sessionKey, "studentName"));
             session.setDepartment((String) redisTemplate.opsForHash().get(sessionKey, "department"));
             session.setStatus(ExamSession.SessionStatus.valueOf(
-                (String) redisTemplate.opsForHash().get(sessionKey, "status")));
+                    (String) redisTemplate.opsForHash().get(sessionKey, "status")));
             session.setViolationCount((Integer) redisTemplate.opsForHash().get(sessionKey, "violationCount"));
             session.setStartedAt(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "startedAt")));
             session.setExpiresAt(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "expiresAt")));
             session.setWebSocketSessionId((String) redisTemplate.opsForHash().get(sessionKey, "webSocketSessionId"));
-            session.setLastHeartbeat(LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "lastHeartbeat")));
+            session.setLastHeartbeat(
+                    LocalDateTime.parse((String) redisTemplate.opsForHash().get(sessionKey, "lastHeartbeat")));
             return session;
         } catch (Exception e) {
             log.error("Error parsing session data", e);
@@ -116,7 +132,7 @@ public class SessionManagerService {
      */
     public void updateWebSocketSession(Long sessionId, String newWebSocketSessionId) {
         String sessionKey = SESSION_PREFIX + sessionId;
-        
+
         // Remove old WebSocket mapping
         String oldWsSessionId = (String) redisTemplate.opsForHash().get(sessionKey, "webSocketSessionId");
         if (oldWsSessionId != null) {
@@ -124,10 +140,12 @@ public class SessionManagerService {
         }
 
         // Set new WebSocket session
-        redisTemplate.opsForHash().put(sessionKey, "webSocketSessionId", newWebSocketSessionId);
-        
+        redisTemplate.opsForHash().put(sessionKey, "webSocketSessionId", Objects.requireNonNull(newWebSocketSessionId));
+
         String wsKey = WEBSOCKET_PREFIX + newWebSocketSessionId;
-        redisTemplate.opsForValue().set(wsKey, sessionId, SESSION_TTL_HOURS, TimeUnit.HOURS);
+        if (sessionId != null) {
+            redisTemplate.opsForValue().set(wsKey, sessionId, SESSION_TTL_HOURS, TimeUnit.HOURS);
+        }
 
         log.info("Updated WebSocket session for exam session {}", sessionId);
     }
@@ -137,8 +155,9 @@ public class SessionManagerService {
      */
     public void updateHeartbeat(Long sessionId) {
         String sessionKey = SESSION_PREFIX + sessionId;
-        redisTemplate.opsForHash().put(sessionKey, "lastHeartbeat", LocalDateTime.now().toString());
-        
+        redisTemplate.opsForHash().put(sessionKey, "lastHeartbeat",
+                Objects.requireNonNull(LocalDateTime.now().toString()));
+
         // Extend TTL
         redisTemplate.expire(sessionKey, SESSION_TTL_HOURS, TimeUnit.HOURS);
     }
@@ -148,7 +167,7 @@ public class SessionManagerService {
      */
     public void updateViolationCount(Long sessionId, int violations) {
         String sessionKey = SESSION_PREFIX + sessionId;
-        redisTemplate.opsForHash().put(sessionKey, "violationCount", violations);
+        redisTemplate.opsForHash().put(sessionKey, "violationCount", Objects.requireNonNull(violations));
     }
 
     /**
@@ -156,8 +175,10 @@ public class SessionManagerService {
      */
     public void updateSessionStatus(Long sessionId, ExamSession.SessionStatus status) {
         String sessionKey = SESSION_PREFIX + sessionId;
-        redisTemplate.opsForHash().put(sessionKey, "status", status.name());
-        
+        if (status != null) {
+            redisTemplate.opsForHash().put(sessionKey, "status", Objects.requireNonNull(status.name()));
+        }
+
         if (status != ExamSession.SessionStatus.ACTIVE) {
             // Remove from active sessions
             redisTemplate.opsForSet().remove(ACTIVE_SESSIONS_KEY, sessionId);
@@ -169,16 +190,16 @@ public class SessionManagerService {
      */
     public Set<ExamSession> getActiveSessionsForExam(Long examId) {
         Set<Object> sessionIds = redisTemplate.opsForSet().members(ACTIVE_SESSIONS_KEY);
-        
+
         if (sessionIds == null) {
             return Set.of();
         }
 
         return sessionIds.stream()
-            .map(id -> getSession((Long) id))
-            .filter(session -> session != null && session.getExamId().equals(examId))
-            .filter(session -> session.getStatus() == ExamSession.SessionStatus.ACTIVE)
-            .collect(Collectors.toSet());
+                .map(id -> getSession((Long) id))
+                .filter(session -> session != null && session.getExamId().equals(examId))
+                .filter(session -> session.getStatus() == ExamSession.SessionStatus.ACTIVE)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -186,16 +207,16 @@ public class SessionManagerService {
      */
     public Set<ExamSession> getActiveSessionsForDepartment(String department) {
         Set<Object> sessionIds = redisTemplate.opsForSet().members(ACTIVE_SESSIONS_KEY);
-        
+
         if (sessionIds == null) {
             return Set.of();
         }
 
         return sessionIds.stream()
-            .map(id -> getSession((Long) id))
-            .filter(session -> session != null && department.equals(session.getDepartment()))
-            .filter(session -> session.getStatus() == ExamSession.SessionStatus.ACTIVE)
-            .collect(Collectors.toSet());
+                .map(id -> getSession((Long) id))
+                .filter(session -> session != null && department.equals(session.getDepartment()))
+                .filter(session -> session.getStatus() == ExamSession.SessionStatus.ACTIVE)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -211,7 +232,7 @@ public class SessionManagerService {
      */
     public void deleteSession(Long sessionId) {
         String sessionKey = SESSION_PREFIX + sessionId;
-        
+
         // Get WebSocket session ID before deleting
         String wsSessionId = (String) redisTemplate.opsForHash().get(sessionKey, "webSocketSessionId");
         if (wsSessionId != null) {
@@ -220,10 +241,10 @@ public class SessionManagerService {
 
         // Remove from active sessions
         redisTemplate.opsForSet().remove(ACTIVE_SESSIONS_KEY, sessionId);
-        
+
         // Delete session data
         redisTemplate.delete(sessionKey);
-        
+
         log.info("Deleted exam session {}", sessionId);
     }
 
@@ -233,5 +254,10 @@ public class SessionManagerService {
     public long getActiveSessionCount() {
         Long count = redisTemplate.opsForSet().size(ACTIVE_SESSIONS_KEY);
         return count != null ? count : 0;
+    }
+
+    public long getTerminatedSessionCount() {
+        // Implement persistence for terminated session count or query database
+        return 0;
     }
 }

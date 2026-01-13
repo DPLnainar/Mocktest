@@ -41,6 +41,7 @@ public class ProctorLog {
     // JSON metadata: confidence scores, face count, etc.
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
+    @Builder.Default
     private Map<String, Object> metadata = new HashMap<>();
 
     @Column(nullable = false)

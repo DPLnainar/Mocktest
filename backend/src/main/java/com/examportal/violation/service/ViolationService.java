@@ -3,10 +3,7 @@ package com.examportal.violation.service;
 import com.examportal.monitoring.model.StudentStatus;
 import com.examportal.violation.entity.Violation;
 import com.examportal.violation.repository.ViolationRepository;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -42,9 +39,14 @@ public class ViolationService {
         return violationRepository.sumStrikesBySessionId(sessionId);
     }
 
-    public int recordViolation(Long sessionId, Long studentId, Long examId, 
-                                Violation.ViolationType type, Violation.Severity severity, 
-                                String message, Object evidence) {
+    public long countTotalViolations() {
+        return violationRepository.count();
+    }
+
+    @SuppressWarnings("unchecked")
+    public int recordViolation(Long sessionId, Long studentId, Long examId,
+            Violation.ViolationType type, Violation.Severity severity,
+            String message, Object evidence) {
         Violation violation = Violation.builder()
                 .sessionId(sessionId)
                 .studentId(studentId)
@@ -59,37 +61,38 @@ public class ViolationService {
                 .confirmed(false)
                 .strikeCount(1)
                 .build();
-        
-        violationRepository.save(violation);
+
+        violationRepository.save(java.util.Objects.requireNonNull(violation));
         return getStrikeCount(sessionId);
     }
 
     public ViolationStats getViolationStats(Long sessionId) {
         List<Violation> violations = getSessionViolations(sessionId);
-        
+
         Map<Violation.ViolationType, Long> typeCount = violations.stream()
                 .collect(Collectors.groupingBy(Violation::getType, Collectors.counting()));
-        
+
         int totalStrikes = getStrikeCount(sessionId);
         int confirmedCount = (int) violations.stream().filter(v -> Boolean.TRUE.equals(v.getConfirmed())).count();
-        
-        // Calculate camera violations (PHONE_DETECTED, NO_FACE_DETECTED, MULTIPLE_FACES, NO_FACE, UNKNOWN_FACE)
+
+        // Calculate camera violations (PHONE_DETECTED, NO_FACE_DETECTED,
+        // MULTIPLE_FACES, NO_FACE, UNKNOWN_FACE)
         int cameraViolations = (int) violations.stream()
                 .filter(v -> v.getType() == Violation.ViolationType.PHONE_DETECTED ||
-                            v.getType() == Violation.ViolationType.NO_FACE_DETECTED ||
-                            v.getType() == Violation.ViolationType.MULTIPLE_FACES ||
-                            v.getType() == Violation.ViolationType.NO_FACE ||
-                            v.getType() == Violation.ViolationType.UNKNOWN_FACE)
+                        v.getType() == Violation.ViolationType.NO_FACE_DETECTED ||
+                        v.getType() == Violation.ViolationType.MULTIPLE_FACES ||
+                        v.getType() == Violation.ViolationType.NO_FACE ||
+                        v.getType() == Violation.ViolationType.UNKNOWN_FACE)
                 .count();
-        
+
         // Calculate tab switch count
         int tabSwitchCount = (int) violations.stream()
                 .filter(v -> v.getType() == Violation.ViolationType.TAB_SWITCH)
                 .count();
-        
+
         // Determine if session is terminated (e.g., if total strikes >= 5)
         boolean terminated = totalStrikes >= 5;
-        
+
         return new ViolationStats(
                 violations.size(),
                 totalStrikes,
@@ -98,14 +101,13 @@ public class ViolationService {
                 cameraViolations,
                 tabSwitchCount,
                 terminated,
-                typeCount
-        );
+                typeCount);
     }
 
     public void updateViolationConfirmation(Long violationId, boolean confirmed, String reason) {
-        Violation violation = violationRepository.findById(violationId)
+        Violation violation = violationRepository.findById(java.util.Objects.requireNonNull(violationId))
                 .orElseThrow(() -> new RuntimeException("Violation not found: " + violationId));
-        
+
         violation.setConfirmed(confirmed);
         violation.setMessage(violation.getMessage() + " [Review: " + reason + "]");
         violationRepository.save(violation);
@@ -136,13 +138,13 @@ public class ViolationService {
     }
 
     public record ViolationStats(
-        int totalViolations,
-        int totalStrikes,
-        int confirmedViolations,
-        int pendingReview,
-        int cameraViolations,
-        int tabSwitchCount,
-        boolean terminated,
-        Map<Violation.ViolationType, Long> violationsByType
-    ) {}
+            int totalViolations,
+            int totalStrikes,
+            int confirmedViolations,
+            int pendingReview,
+            int cameraViolations,
+            int tabSwitchCount,
+            boolean terminated,
+            Map<Violation.ViolationType, Long> violationsByType) {
+    }
 }

@@ -1,7 +1,6 @@
 package com.examportal.violation.controller;
 
 import com.examportal.security.CustomUserDetails;
-import com.examportal.security.DepartmentSecurityService;
 import com.examportal.violation.dto.EnhancedViolationRequest;
 import com.examportal.violation.entity.Violation;
 import com.examportal.violation.service.FalsePositiveFilterService;
@@ -30,14 +29,11 @@ public class ViolationController {
 
     private final ViolationService violationService;
     private final FalsePositiveFilterService falsePositiveFilter;
-    private final DepartmentSecurityService securityService;
 
-    public ViolationController(ViolationService violationService, 
-                               FalsePositiveFilterService falsePositiveFilter, 
-                               DepartmentSecurityService securityService) {
+    public ViolationController(ViolationService violationService,
+            FalsePositiveFilterService falsePositiveFilter) {
         this.violationService = violationService;
         this.falsePositiveFilter = falsePositiveFilter;
-        this.securityService = securityService;
     }
 
     /**
@@ -50,21 +46,20 @@ public class ViolationController {
     public ResponseEntity<ViolationResponse> reportViolation(
             @Valid @RequestBody EnhancedViolationRequest request,
             @AuthenticationPrincipal CustomUserDetails student) {
-        
-        log.info("Student {} reporting violation: {} (confidence: {}, consecutive: {})", 
-                student.getId(), request.getViolationType(), 
+
+        log.info("Student {} reporting violation: {} (confidence: {}, consecutive: {})",
+                student.getId(), request.getViolationType(),
                 request.getConfidence(), request.getConsecutiveFrames());
 
         // Phase 8: Validate violation meets quality thresholds
         if (!falsePositiveFilter.shouldProcessViolation(request)) {
             log.debug("Violation rejected - failed false-positive filter");
-            
+
             int currentStrikes = violationService.getStrikeCount(request.getSessionId());
             return ResponseEntity.ok(new ViolationResponse(
                     currentStrikes,
                     false,
-                    "Violation filtered (insufficient confidence or consecutive frames)"
-            ));
+                    "Violation filtered (insufficient confidence or consecutive frames)"));
         }
 
         // Parse enums
@@ -78,14 +73,12 @@ public class ViolationController {
                 type,
                 severity,
                 request.getMessage(),
-                request.getEvidence()
-        );
+                request.getEvidence());
 
         return ResponseEntity.ok(new ViolationResponse(
                 strikeCount,
                 strikeCount >= 5,
-                "Violation recorded. Total strikes: " + strikeCount
-        ));
+                "Violation recorded. Total strikes: " + strikeCount));
     }
 
     /**
@@ -139,12 +132,11 @@ public class ViolationController {
     @PreAuthorize("hasAnyAuthority('STUDENT', 'MODERATOR', 'ADMIN')")
     public ResponseEntity<StrikeCountResponse> getStrikeCount(@PathVariable Long sessionId) {
         int strikeCount = violationService.getStrikeCount(sessionId);
-        
+
         return ResponseEntity.ok(new StrikeCountResponse(
                 strikeCount,
                 strikeCount >= 5,
-                5 - strikeCount
-        ));
+                5 - strikeCount));
     }
 
     /**
@@ -169,16 +161,15 @@ public class ViolationController {
     public ResponseEntity<String> confirmViolation(
             @PathVariable Long violationId,
             @RequestBody ConfirmationRequest request) {
-        
-        log.info("Moderator {} violation {}: {}", 
-                request.isConfirmed() ? "confirming" : "rejecting", 
+
+        log.info("Moderator {} violation {}: {}",
+                request.isConfirmed() ? "confirming" : "rejecting",
                 violationId, request.getReason());
 
         violationService.updateViolationConfirmation(
-                violationId, 
-                request.isConfirmed(), 
-                request.getReason()
-        );
+                violationId,
+                request.isConfirmed(),
+                request.getReason());
 
         return ResponseEntity.ok(request.isConfirmed() ? "Violation confirmed" : "Violation rejected");
     }
@@ -193,7 +184,7 @@ public class ViolationController {
     public ResponseEntity<String> resetStrikeCount(
             @PathVariable Long sessionId,
             @RequestBody ResetRequest request) {
-        
+
         log.warn("Admin resetting strike count for session {}: {}", sessionId, request.getReason());
 
         violationService.resetStrikeCount(sessionId, request.getReason());
@@ -209,8 +200,11 @@ public class ViolationController {
         private String description;
         private Map<String, Object> evidence;
 
-        public ViolationReportRequest() {}
-        public ViolationReportRequest(Long sessionId, Long examId, Violation.ViolationType type, Violation.Severity severity, String description, Map<String, Object> evidence) {
+        public ViolationReportRequest() {
+        }
+
+        public ViolationReportRequest(Long sessionId, Long examId, Violation.ViolationType type,
+                Violation.Severity severity, String description, Map<String, Object> evidence) {
             this.sessionId = sessionId;
             this.examId = examId;
             this.type = type;
@@ -219,18 +213,53 @@ public class ViolationController {
             this.evidence = evidence;
         }
 
-        public Long getSessionId() { return sessionId; }
-        public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
-        public Long getExamId() { return examId; }
-        public void setExamId(Long examId) { this.examId = examId; }
-        public Violation.ViolationType getType() { return type; }
-        public void setType(Violation.ViolationType type) { this.type = type; }
-        public Violation.Severity getSeverity() { return severity; }
-        public void setSeverity(Violation.Severity severity) { this.severity = severity; }
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-        public Map<String, Object> getEvidence() { return evidence; }
-        public void setEvidence(Map<String, Object> evidence) { this.evidence = evidence; }
+        public Long getSessionId() {
+            return sessionId;
+        }
+
+        public void setSessionId(Long sessionId) {
+            this.sessionId = sessionId;
+        }
+
+        public Long getExamId() {
+            return examId;
+        }
+
+        public void setExamId(Long examId) {
+            this.examId = examId;
+        }
+
+        public Violation.ViolationType getType() {
+            return type;
+        }
+
+        public void setType(Violation.ViolationType type) {
+            this.type = type;
+        }
+
+        public Violation.Severity getSeverity() {
+            return severity;
+        }
+
+        public void setSeverity(Violation.Severity severity) {
+            this.severity = severity;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public Map<String, Object> getEvidence() {
+            return evidence;
+        }
+
+        public void setEvidence(Map<String, Object> evidence) {
+            this.evidence = evidence;
+        }
     }
 
     public static class ViolationResponse {
@@ -238,19 +267,38 @@ public class ViolationController {
         private boolean terminated;
         private String message;
 
-        public ViolationResponse() {}
+        public ViolationResponse() {
+        }
+
         public ViolationResponse(int strikeCount, boolean terminated, String message) {
             this.strikeCount = strikeCount;
             this.terminated = terminated;
             this.message = message;
         }
 
-        public int getStrikeCount() { return strikeCount; }
-        public void setStrikeCount(int strikeCount) { this.strikeCount = strikeCount; }
-        public boolean isTerminated() { return terminated; }
-        public void setTerminated(boolean terminated) { this.terminated = terminated; }
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
+        public int getStrikeCount() {
+            return strikeCount;
+        }
+
+        public void setStrikeCount(int strikeCount) {
+            this.strikeCount = strikeCount;
+        }
+
+        public boolean isTerminated() {
+            return terminated;
+        }
+
+        public void setTerminated(boolean terminated) {
+            this.terminated = terminated;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
     }
 
     public static class StrikeCountResponse {
@@ -258,46 +306,85 @@ public class ViolationController {
         private boolean terminated;
         private int remainingStrikes;
 
-        public StrikeCountResponse() {}
+        public StrikeCountResponse() {
+        }
+
         public StrikeCountResponse(int currentStrikes, boolean terminated, int remainingStrikes) {
             this.currentStrikes = currentStrikes;
             this.terminated = terminated;
             this.remainingStrikes = remainingStrikes;
         }
 
-        public int getCurrentStrikes() { return currentStrikes; }
-        public void setCurrentStrikes(int currentStrikes) { this.currentStrikes = currentStrikes; }
-        public boolean isTerminated() { return terminated; }
-        public void setTerminated(boolean terminated) { this.terminated = terminated; }
-        public int getRemainingStrikes() { return remainingStrikes; }
-        public void setRemainingStrikes(int remainingStrikes) { this.remainingStrikes = remainingStrikes; }
+        public int getCurrentStrikes() {
+            return currentStrikes;
+        }
+
+        public void setCurrentStrikes(int currentStrikes) {
+            this.currentStrikes = currentStrikes;
+        }
+
+        public boolean isTerminated() {
+            return terminated;
+        }
+
+        public void setTerminated(boolean terminated) {
+            this.terminated = terminated;
+        }
+
+        public int getRemainingStrikes() {
+            return remainingStrikes;
+        }
+
+        public void setRemainingStrikes(int remainingStrikes) {
+            this.remainingStrikes = remainingStrikes;
+        }
     }
 
     public static class ConfirmationRequest {
         private boolean confirmed;
         private String reason;
 
-        public ConfirmationRequest() {}
+        public ConfirmationRequest() {
+        }
+
         public ConfirmationRequest(boolean confirmed, String reason) {
             this.confirmed = confirmed;
             this.reason = reason;
         }
 
-        public boolean isConfirmed() { return confirmed; }
-        public void setConfirmed(boolean confirmed) { this.confirmed = confirmed; }
-        public String getReason() { return reason; }
-        public void setReason(String reason) { this.reason = reason; }
+        public boolean isConfirmed() {
+            return confirmed;
+        }
+
+        public void setConfirmed(boolean confirmed) {
+            this.confirmed = confirmed;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
     }
 
     public static class ResetRequest {
         private String reason;
 
-        public ResetRequest() {}
+        public ResetRequest() {
+        }
+
         public ResetRequest(String reason) {
             this.reason = reason;
         }
 
-        public String getReason() { return reason; }
-        public void setReason(String reason) { this.reason = reason; }
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
     }
 }

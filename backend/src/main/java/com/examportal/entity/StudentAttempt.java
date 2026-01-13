@@ -44,17 +44,21 @@ public class StudentAttempt {
     private Double totalMarks;
 
     // Violation tracking (Phase 2: Anti-cheat)
+    @Builder.Default
     private Integer violationCount = 0;
+    @Builder.Default
     private Boolean autoSubmitted = false;
 
     // JSON map: questionId -> student's answer (MCQ option or code)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
+    @Builder.Default
     private Map<String, String> answers = new HashMap<>();
 
     // JSON map: questionId -> execution result object
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
+    @Builder.Default
     private Map<String, Object> executionResults = new HashMap<>();
 
     private LocalDateTime createdAt;

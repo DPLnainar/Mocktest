@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 public class ViolationEventListener {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ViolationEventListener.class);
+
     /**
      * Handle violation event asynchronously
      * Runs in separate thread pool to avoid blocking main flow
@@ -26,19 +27,19 @@ public class ViolationEventListener {
     @EventListener
     @Async("taskExecutor")
     public void handleViolationEvent(ViolationEvent event) {
-        log.info("Processing violation event: {} for student {} (Session: {})", 
+        log.info("Processing violation event: {} for student {} (Session: {})",
                 event.getType(), event.getStudentId(), event.getSessionId());
 
         try {
             // Log for analytics
             logViolationForAnalytics(event);
 
-            // TODO: Send notification to exam coordinator (if critical)
+            // Future: Send notification to exam coordinator (if critical)
             if (event.getSeverity() == com.examportal.violation.entity.Violation.Severity.CRITICAL) {
                 notifyExamCoordinator(event);
             }
 
-            // TODO: Store evidence to external storage (S3, etc.)
+            // Future: Store evidence to external storage (S3, etc.)
             if (event.getEvidence() != null && !event.getEvidence().isEmpty()) {
                 archiveEvidence(event);
             }
@@ -53,7 +54,7 @@ public class ViolationEventListener {
      */
     private void logViolationForAnalytics(ViolationEvent event) {
         // Could send to analytics service, data warehouse, etc.
-        log.debug("Violation analytics: Type={}, Severity={}, Student={}, Exam={}", 
+        log.debug("Violation analytics: Type={}, Severity={}, Student={}, Exam={}",
                 event.getType(), event.getSeverity(), event.getStudentId(), event.getExamId());
     }
 
@@ -61,8 +62,8 @@ public class ViolationEventListener {
      * Notify exam coordinator of critical violations
      */
     private void notifyExamCoordinator(ViolationEvent event) {
-        // TODO: Implement email/SMS notification
-        log.warn("CRITICAL VIOLATION: {} for student {} in session {}", 
+        // Future: Implement email/SMS notification
+        log.warn("CRITICAL VIOLATION: {} for student {} in session {}",
                 event.getType(), event.getStudentId(), event.getSessionId());
     }
 
@@ -70,7 +71,7 @@ public class ViolationEventListener {
      * Archive evidence to external storage
      */
     private void archiveEvidence(ViolationEvent event) {
-        // TODO: Upload screenshot to S3/Cloud Storage
+        // Future: Upload screenshot to S3/Cloud Storage
         log.debug("Archiving evidence for violation in session {}", event.getSessionId());
     }
 }

@@ -1,13 +1,16 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Editor from '@monaco-editor/react'
 import { useExamStore } from '../store/examStore'
 import { executionAPI, parserAPI } from '../services/api'
 import toast from 'react-hot-toast'
-import { Play, Check, X } from 'lucide-react'
+import { Play, Loader2 } from 'lucide-react'
 
-export default function CodeEditor({ sessionId, examId }) {
+// Updated Props: CodeEditor now needs attemptId and questionId to track execution
+export default function CodeEditor({ attemptId, questionId }) {
   const { code, language, setCode } = useExamStore()
   const editorRef = useRef(null)
+  const [isRunning, setIsRunning] = useState(false)
+  const [executionOutput, setExecutionOutput] = useState(null)
 
   const handleEditorMount = (editor) => {
     editorRef.current = editor
@@ -19,71 +22,105 @@ export default function CodeEditor({ sessionId, examId }) {
       return
     }
 
-    try {
-      toast.loading('Verifying code...', { id: 'verify' })
+    setIsRunning(true)
+    setExecutionOutput(null)
 
+    try {
       // Step 1: Verify logic (ANTLR parser)
-      const verifyResponse = await parserAPI.verify(code, language, [
-        { construct: 'FORBIDDEN_LIBRARY', value: 'Arrays.sort' },
-        { construct: 'FORBIDDEN_LIBRARY', value: 'Collections.sort' },
-      ])
+      toast.loading('Verifying logic...', { id: 'run-process' })
+      const verifyResponse = await parserAPI.verify(code, language, [])
 
       const { violations } = verifyResponse.data
-
       if (violations.length > 0) {
-        toast.error('Forbidden constructs detected!', { id: 'verify' })
-        violations.forEach((v) => {
-          toast.error(`Line ${v.line}: ${v.message}`, { duration: 5000 })
-        })
+        toast.error('Logic violations detected!', { id: 'run-process' })
+        violations.forEach(v => toast.error(`Line ${v.line}: ${v.message}`))
+        setIsRunning(false)
         return
       }
 
-      toast.success('Logic verified ✓', { id: 'verify' })
+      // Step 2: Queue Execution
+      toast.loading('Queuing execution...', { id: 'run-process' })
 
-      // Step 2: Execute code (Judge0)
-      toast.loading('Executing code...', { id: 'execute' })
-
-      const executeResponse = await executionAPI.execute({
-        sessionId,
-        code,
-        language,
-        testCases: [
-          { input: '5\n3\n1\n4\n2', expectedOutput: '1\n2\n3\n4\n5' },
-        ],
+      // Execute request now returns executionId immediately (Async)
+      const executeResponse = await executionAPI.execute(attemptId, {
+        questionId: questionId,
+        code: code,
+        languageId: language === 'java' ? 62 : 71, // Example mapping, ideally fetched from config
+        stdin: ""
       })
 
-      const { submissionId } = executeResponse.data
+      // If backend returns status=QUEUED, we poll. 
+      // Current SubmissionProducer returns plain executionId string or ExecutionResult object? 
+      // Controller returns ResponseEntity<ExecutionResult>.
+      const initialResult = executeResponse.data
 
-      // Poll for result
-      await pollResult(submissionId)
+      if (initialResult.status === 'QUEUED') {
+        toast.loading('Running in queue...', { id: 'run-process' })
+        await pollResult(initialResult.executionId)
+      } else {
+        // Immediate result (fallback or cached)
+        handleExecutionComplete(initialResult)
+      }
+
     } catch (error) {
-      console.error('Execution failed:', error)
-      toast.error('Execution failed', { id: 'execute' })
+      console.error('Run failed:', error)
+      toast.error('Run failed: ' + (error.response?.data?.message || error.message), { id: 'run-process' })
+      setIsRunning(false)
     }
   }
 
-  const pollResult = async (submissionId, maxAttempts = 10) => {
-    for (let i = 0; i < maxAttempts; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+  const pollResult = async (executionId) => {
+    const { exponentialBackoffPoll, getStatusMessage } = await import('../utils/pollingUtils')
 
-      try {
-        const response = await executionAPI.getResult(submissionId)
-        const { status, output, error } = response.data
+    const pollFunction = async () => {
+      const response = await executionAPI.getResult(attemptId, questionId)
+      return response.data
+    }
 
-        if (status === 'COMPLETED') {
-          toast.success('Execution completed!', { id: 'execute' })
-          console.log('Output:', output)
-          return
-        } else if (status === 'FAILED') {
-          toast.error(`Error: ${error}`, { id: 'execute', duration: 5000 })
-          return
-        }
-      } catch (error) {
-        console.error('Polling failed:', error)
+    const onUpdate = (result, attemptNumber, nextDelay) => {
+      const message = getStatusMessage(result?.status, attemptNumber)
+
+      if (attemptNumber % 2 === 0) {
+        toast.loading(
+          `${message} (${attemptNumber}/30, next: ${Math.round(nextDelay / 1000)}s)`,
+          { id: 'run-process' }
+        )
       }
     }
 
-    toast.error('Execution timeout', { id: 'execute' })
+    const onComplete = (result) => {
+      setIsRunning(false)
+      toast.dismiss('run-process')
+
+      if (result.passed) {
+        toast.success('Test Cases Passed! ✓', { duration: 3000 })
+      } else if (result.status?.includes('Error')) {
+        toast.error(`Execution failed: ${result.error || result.status}`, { duration: 5000 })
+      } else {
+        toast.error('Test Cases Failed', { duration: 4000 })
+      }
+
+      setExecutionOutput(result.stdout || result.error || "Execution finished")
+    }
+
+    const onTimeout = () => {
+      setIsRunning(false)
+      toast.dismiss('run-process')
+      toast.error('Execution timed out - please try again', { duration: 6000 })
+      setExecutionOutput('Execution timed out after 30 polling attempts')
+    }
+
+    exponentialBackoffPoll(pollFunction, onUpdate, onComplete, onTimeout)
+  }
+
+  const handleExecutionComplete = (result) => {
+    setIsRunning(false)
+    if (result.passed) {
+      toast.success('Test Cases Passed!', { id: 'run-process' })
+    } else {
+      toast.error('Test Cases Failed', { id: 'run-process' })
+    }
+    setExecutionOutput(result.stdout || result.error || "Execution finished")
   }
 
   return (
@@ -105,32 +142,45 @@ export default function CodeEditor({ sessionId, examId }) {
 
         <button
           onClick={handleRunCode}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition"
+          disabled={isRunning}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition ${isRunning ? 'bg-gray-700 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+            }`}
         >
-          <Play size={16} />
-          <span>Run Code</span>
+          {isRunning ? <Loader2 className="animate-spin" size={16} /> : <Play size={16} />}
+          <span>{isRunning ? 'Running...' : 'Run Code'}</span>
         </button>
       </div>
 
-      {/* Editor */}
-      <div className="flex-1 monaco-container">
-        <Editor
-          height="100%"
-          language={language}
-          value={code}
-          onChange={(value) => setCode(value || '')}
-          onMount={handleEditorMount}
-          theme="vs-dark"
-          options={{
-            fontSize: 14,
-            minimap: { enabled: true },
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            tabSize: 2,
-            wordWrap: 'on',
-          }}
-        />
+      {/* Editor & Output Split */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex-1 monaco-container relative">
+          <Editor
+            height="100%"
+            language={language}
+            value={code}
+            onChange={(value) => setCode(value || '')}
+            onMount={handleEditorMount}
+            theme="vs-dark"
+            options={{
+              fontSize: 14,
+              minimap: { enabled: true },
+              scrollBeyondLastLine: false,
+              automaticLayout: true,
+              tabSize: 2,
+              wordWrap: 'on',
+            }}
+          />
+        </div>
+
+        {/* Output Console Component */}
+        {executionOutput && (
+          <div className="h-48 bg-black border-t border-gray-700 p-4 overflow-auto font-mono text-sm">
+            <div className="text-gray-400 mb-2">Console Output:</div>
+            <pre className="text-green-400 whitespace-pre-wrap">{executionOutput}</pre>
+          </div>
+        )}
       </div>
     </div>
   )
 }
+

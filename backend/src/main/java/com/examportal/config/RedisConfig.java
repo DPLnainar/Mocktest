@@ -30,7 +30,8 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        LettuceConnectionFactory factory = new LettuceConnectionFactory(redisHost, redisPort);
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(java.util.Objects.requireNonNull(redisHost),
+                redisPort);
         factory.afterPropertiesSet();
         return factory;
     }
@@ -39,21 +40,21 @@ public class RedisConfig {
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
-        
+
         // Use String serializer for keys
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
-        
+
         // Use JSON serializer for values
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
-        
+
         template.afterPropertiesSet();
         return template;
     }
 
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
-        return new StringRedisTemplate(connectionFactory);
+        return new StringRedisTemplate(java.util.Objects.requireNonNull(connectionFactory));
     }
 }

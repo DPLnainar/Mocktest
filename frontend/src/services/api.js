@@ -59,11 +59,13 @@ export const violationAPI = {
 
 // Execution endpoints
 export const executionAPI = {
-  execute: (submission) =>
-    api.post('/execution/execute', submission),
+  // execute: (attemptId, questionId, code, languageId)
+  execute: (attemptId, data) =>
+    api.post(`/student/attempts/${attemptId}/execute`, data),
 
-  getResult: (submissionId) =>
-    api.get(`/execution/result/${submissionId}`),
+  // getResult: (attemptId, questionId)
+  getResult: (attemptId, questionId) =>
+    api.get(`/student/attempts/${attemptId}/questions/${questionId}/result`),
 }
 
 // Parser endpoints

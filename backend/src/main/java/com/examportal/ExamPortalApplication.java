@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * - Judge0 sandboxed code execution
  * - Department-level RBAC
  */
+
 @SpringBootApplication
 @EnableFeignClients
 @EnableJpaAuditing
@@ -28,20 +29,20 @@ public class ExamPortalApplication {
     public static void main(String[] args) {
         SpringApplication.run(ExamPortalApplication.class, args);
         System.out.println("""
-            
-            ╔══════════════════════════════════════════════════════════════╗
-            ║  Exam Portal Backend Started Successfully                    ║
-            ║  ---------------------------------------------------------- ║
-            ║  Features Enabled:                                           ║
-            ║  ✓ Spring Security + JWT                                     ║
-            ║  ✓ PostgreSQL with HikariCP (Pool: 20)                       ║
-            ║  ✓ Redis Atomic Counters                                     ║
-            ║  ✓ RabbitMQ WebSocket Broker                                 ║
-            ║  ✓ Judge0 Code Execution                                     ║
-            ║  ✓ Resilience4j Circuit Breaker                              ║
-            ║  ---------------------------------------------------------- ║
-            ║  Monitoring: http://localhost:8080/actuator/prometheus       ║
-            ╚══════════════════════════════════════════════════════════════╝
-            """);
+
+                ╔══════════════════════════════════════════════════════════════╗
+                ║  Exam Portal Backend Started Successfully                    ║
+                ║  ---------------------------------------------------------- ║
+                ║  Features Enabled:                                           ║
+                ║  ✓ Spring Security + JWT                                     ║
+                ║  ✓ PostgreSQL with HikariCP (Pool: 20)                       ║
+                ║  ✓ Redis Atomic Counters                                     ║
+                ║  ✓ RabbitMQ WebSocket Broker                                 ║
+                ║  ✓ Judge0 Code Execution                                     ║
+                ║  ✓ Resilience4j Circuit Breaker                              ║
+                ║  ---------------------------------------------------------- ║
+                ║  Monitoring: http://localhost:8080/actuator/prometheus       ║
+                ╚══════════════════════════════════════════════════════════════╝
+                """);
     }
 }

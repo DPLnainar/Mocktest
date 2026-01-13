@@ -24,4 +24,12 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
+  optimizeDeps: {
+    include: [
+      '@tensorflow/tfjs',
+      '@tensorflow-models/coco-ssd',
+      '@vladmandic/face-api',
+      '@vladmandic/face-api/dist/face-api.esm-nobundle.js'
+    ]
+  }
 })

@@ -1,0 +1,100 @@
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.QuestionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.TestRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.RoleRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.ScreenRecordingRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.StudentAttemptRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.repository.ProctorLogRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.violation.repository.OptimizedViolationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.examportal.violation.repository.ViolationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-01-12 15:23:53 - Finished Spring Data repository scanning in 11 ms. Found 0 Redis repository interfaces.
+2026-01-12 15:23:54 - BeanFactory id=837abcf4-49f8-377a-a154-ef4417324281
+2026-01-12 15:23:55 - Tomcat initialized with port 8080 (http)
+2026-01-12 15:23:55 - Starting service [Tomcat]
+2026-01-12 15:23:55 - Starting Servlet engine: [Apache Tomcat/10.1.17]
+2026-01-12 15:23:55 - Initializing Spring embedded WebApplicationContext
+2026-01-12 15:23:55 - Root WebApplicationContext: initialization completed in 3797 ms
+2026-01-12 15:23:55 - ExamPortalHikariPool - Starting...
+2026-01-12 15:23:56 - ExamPortalHikariPool - Added connection org.postgresql.jdbc.PgConnection@6e7fa4b0
+2026-01-12 15:23:56 - ExamPortalHikariPool - Start completed.
+2026-01-12 15:23:56 - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-12 15:23:56 - HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-01-12 15:23:56 - HHH000026: Second-level cache disabled
+2026-01-12 15:23:56 - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-12 15:23:56 - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-12 15:23:57 - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-12 15:23:58 - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 15:23:58 - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-12 15:23:59 - Filter 'jwtAuthenticationFilter' configured for use
+2026-01-12 15:24:01 - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-12 15:24:01 - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'minIOUploadService' defined in URL [jar:nested:/app/app.jar/!BOOT-INF/classes/!/com/examportal/service/MinIOUploadService.class]: Unsatisfied dependency expressed through constructor parameter 0: No qualifying bean of type 'io.minio.MinioClient' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+2026-01-12 15:24:01 - Exception thrown from ApplicationListener handling ContextClosedEvent
+org.springframework.beans.factory.BeanCreationNotAllowedException: Error creating bean with name 'meterRegistryCloser': Singleton bean creation not allowed while singletons of this factory are in destruction (Do not request a bean from a BeanFactory in a destroy method implementation!)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:220)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:204)
+	at org.springframework.context.event.AbstractApplicationEventMulticaster.retrieveApplicationListeners(AbstractApplicationEventMulticaster.java:265)
+	at org.springframework.context.event.AbstractApplicationEventMulticaster.getApplicationListeners(AbstractApplicationEventMulticaster.java:222)
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:144)
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:451)
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:457)
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:384)
+	at org.springframework.context.support.AbstractApplicationContext.doClose(AbstractApplicationContext.java:1128)
+	at org.springframework.context.support.AbstractApplicationContext.close(AbstractApplicationContext.java:1091)
+	at org.springframework.cloud.context.named.NamedContextFactory.destroy(NamedContextFactory.java:113)
+	at org.springframework.beans.factory.support.DisposableBeanAdapter.destroy(DisposableBeanAdapter.java:211)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroyBean(DefaultSingletonBeanRegistry.java:587)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingleton(DefaultSingletonBeanRegistry.java:559)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingleton(DefaultListableBeanFactory.java:1202)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingletons(DefaultSingletonBeanRegistry.java:520)
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingletons(DefaultListableBeanFactory.java:1195)
+	at org.springframework.context.support.AbstractApplicationContext.destroyBeans(AbstractApplicationContext.java:1184)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:638)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:762)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:464)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:334)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1358)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1347)
+	at com.examportal.ExamPortalApplication.main(ExamPortalApplication.java:30)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:91)
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:53)
+	at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:58)
+2026-01-12 15:24:01 - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-12 15:24:01 - ExamPortalHikariPool - Shutdown initiated...
+2026-01-12 15:24:01 - ExamPortalHikariPool - Shutdown completed.
+2026-01-12 15:24:01 - Stopping service [Tomcat]
+2026-01-12 15:24:01 - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-12 15:24:01 - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in com.examportal.service.MinIOUploadService required a bean of type 'io.minio.MinioClient' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'io.minio.MinioClient' in your configuration.
+
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2026-01-12 15:24:04 - Starting ExamPortalApplication using Java 17.0.17 with PID 1 (/app/app.jar started by spring in /app)
+2026-01-12 15:24:04 - Running with Spring Boot v3.2.1, Spring v6.1.2
+2026-01-12 15:24:04 - No active profile set, falling back to 1 default profile: "default"

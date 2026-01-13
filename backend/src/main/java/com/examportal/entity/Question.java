@@ -1,5 +1,6 @@
 package com.examportal.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Question {
 
     @Id
@@ -33,6 +35,10 @@ public class Question {
 
     private String department; // For reusability filtering
 
+    @Column(length = 20)
+    @Builder.Default
+    private String storageType = "DB"; // "DB" or "S3"
+
     // MCQ-specific fields
     private String optionA;
     private String optionB;
@@ -41,11 +47,18 @@ public class Question {
     private String correctOption; // A, B, C, or D
 
     // Coding-specific fields
-    private Integer languageId; // Judge0 language ID
+    // Coding-specific fields
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private List<Integer> allowedLanguageIds; // List of Judge0 language IDs
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private List<Map<String, String>> testCases; // [{ "input": "5 3", "expectedOutput": "8" }]
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Boolean> constraints; // e.g. { "banLoops": true, "requireRecursion": true }
 
     @Column(length = 10000)
     private String starterCode;

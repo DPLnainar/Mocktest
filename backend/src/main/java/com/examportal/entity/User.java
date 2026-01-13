@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"userRoles"})
+@EqualsAndHashCode(exclude = { "userRoles" })
 public class User {
 
     @Id
@@ -33,11 +33,13 @@ public class User {
     private String email;
     private String phone;
     private String department;
+    @Builder.Default
     private boolean enabled = true;
     private String profile;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
     @JsonIgnore
+    @Builder.Default
     private Set<UserRole> userRoles = new HashSet<>();
 
     private LocalDateTime createdAt;
@@ -52,6 +54,6 @@ public class User {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-    
+
     // NO manual getters or setters here (Lombok handles them)
 }

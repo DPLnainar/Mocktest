@@ -5,7 +5,6 @@ import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -20,11 +19,11 @@ public class CustomUserDetails implements UserDetails {
     }
 
     // --- DELEGATION METHODS (These were missing!) ---
-    
+
     public Long getId() {
         return user.getId();
     }
-    
+
     public String getEmail() {
         return user.getEmail();
     }
@@ -43,11 +42,11 @@ public class CustomUserDetails implements UserDetails {
 
     public String getDepartment() {
         // Assuming 'profile' field stores department or similar info
-        return user.getProfile(); 
+        return user.getProfile();
     }
 
     // --- Factory Method ---
-    
+
     public static CustomUserDetails build(User user) {
         return new CustomUserDetails(user);
     }
@@ -72,14 +71,22 @@ public class CustomUserDetails implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() {
+        return true;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return user.isEnabled(); }
+    public boolean isEnabled() {
+        return user.isEnabled();
+    }
 }

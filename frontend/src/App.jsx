@@ -11,7 +11,10 @@ import StudentTestListPage from './pages/StudentTestListPage'
 import TestAnalyticsPage from './pages/TestAnalyticsPage'
 import StudentHistoryPage from './pages/StudentHistoryPage'
 import TestTakingPage from './pages/TestTakingPage'
+import TestReviewPage from './pages/TestReviewPage'
+import TestBuilder from './components/TestBuilder'
 import { useAuthStore } from './store/authStore'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
   return (
@@ -27,82 +30,105 @@ function App() {
           },
         }}
       />
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        {/* Moderator Routes */}
-        <Route
-          path="/moderator/tests"
-          element={
-            <ProtectedRoute requiredRole="MODERATOR">
-              <ModeratorTestsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/moderator/questions"
-          element={
-            <ProtectedRoute requiredRole="MODERATOR">
-              <QuestionBankPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/moderator/tests/:testId/analytics"
-          element={
-            <ProtectedRoute requiredRole="MODERATOR">
-              <TestAnalyticsPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Moderator Routes */}
+          <Route
+            path="/moderator/tests"
+            element={
+              <ProtectedRoute requiredRole="MODERATOR">
+                <ModeratorTestsPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Temporary Redirect for users stuck on old route */}
+          <Route path="/moderator/home" element={<Navigate to="/moderator/tests" replace />} />
 
-        {/* Student Routes */}
-        <Route
-          path="/student/tests"
-          element={
-            <ProtectedRoute requiredRole="STUDENT">
-              <StudentTestListPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/test/:testId"
-          element={
-            <ProtectedRoute requiredRole="STUDENT">
-              <TestTakingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/student/history"
-          element={
-            <ProtectedRoute requiredRole="STUDENT">
-              <StudentHistoryPage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Test Builder Route */}
+          <Route
+            path="/moderator/test"
+            element={
+              <ProtectedRoute requiredRole="MODERATOR">
+                <TestBuilder />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Existing Routes */}
-        <Route
-          path="/exam/:examId"
-          element={
-            <ProtectedRoute requiredRole="STUDENT">
-              <ExamPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/moderator/exam/:examId"
-          element={
-            <ProtectedRoute requiredRole="MODERATOR">
-              <ModeratorDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/exam-terminated" element={<ExamTerminated />} />
-        <Route path="/" element={<Navigate to="/login" />} />
-      </Routes>
+          <Route
+            path="/moderator/questions"
+            element={
+              <ProtectedRoute requiredRole="MODERATOR">
+                <QuestionBankPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/moderator/tests/:testId/analytics"
+            element={
+              <ProtectedRoute requiredRole="MODERATOR">
+                <TestAnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Student Routes */}
+          <Route
+            path="/student/tests"
+            element={
+              <ProtectedRoute requiredRole="STUDENT">
+                <StudentTestListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/test/:testId"
+            element={
+              <ProtectedRoute requiredRole="STUDENT">
+                <TestTakingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/history"
+            element={
+              <ProtectedRoute requiredRole="STUDENT">
+                <StudentHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/history/tests/:testId/review"
+            element={
+              <ProtectedRoute requiredRole="STUDENT">
+                <TestReviewPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Existing Routes */}
+          <Route
+            path="/exam/:examId"
+            element={
+              <ProtectedRoute requiredRole="STUDENT">
+                <ExamPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/moderator/exam/:examId"
+            element={
+              <ProtectedRoute requiredRole="MODERATOR">
+                <ModeratorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/exam-terminated" element={<ExamTerminated />} />
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      </ErrorBoundary>
     </BrowserRouter>
   )
 }
@@ -115,7 +141,7 @@ function ProtectedRoute({ children, requiredRole }) {
     return <Navigate to="/login" />
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
+  if (requiredRole && user?.role !== requiredRole && user?.role !== 'ADMIN') {
     return <Navigate to="/" />
   }
 

@@ -6,6 +6,7 @@ import com.examportal.monitoring.service.MonitoringBroadcastService;
 import com.examportal.monitoring.service.SessionManagerService;
 import com.examportal.security.CustomUserDetails;
 import com.examportal.security.DepartmentSecurityService;
+import com.examportal.violation.service.ViolationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +32,16 @@ public class MonitoringRestController {
     private final SessionManagerService sessionManager;
     private final MonitoringBroadcastService broadcastService;
     private final DepartmentSecurityService securityService;
+    private final ViolationService violationService;
 
-    public MonitoringRestController(SessionManagerService sessionManager, 
-                                    MonitoringBroadcastService broadcastService, 
-                                    DepartmentSecurityService securityService) {
+    public MonitoringRestController(SessionManagerService sessionManager,
+            MonitoringBroadcastService broadcastService,
+            DepartmentSecurityService securityService,
+            ViolationService violationService) {
         this.sessionManager = sessionManager;
         this.broadcastService = broadcastService;
         this.securityService = securityService;
+        this.violationService = violationService;
     }
 
     /**
@@ -50,12 +54,12 @@ public class MonitoringRestController {
     public ResponseEntity<List<StudentStatus>> getExamSessions(
             @PathVariable Long examId,
             @AuthenticationPrincipal CustomUserDetails moderator) {
-        
+
         log.info("Moderator {} requesting sessions for exam {}", moderator.getId(), examId);
 
         // Get active sessions
         var sessions = sessionManager.getActiveSessionsForExam(examId);
-        
+
         // Filter by department unless admin
         if (!securityService.isCurrentUserAdmin()) {
             String moderatorDept = moderator.getDepartment();
@@ -81,12 +85,12 @@ public class MonitoringRestController {
     @PreAuthorize("hasAuthority('MODERATOR')")
     public ResponseEntity<List<StudentStatus>> getDepartmentSessions(
             @AuthenticationPrincipal CustomUserDetails moderator) {
-        
+
         String department = moderator.getDepartment();
         log.info("Getting active sessions for department {}", department);
 
         var sessions = sessionManager.getActiveSessionsForDepartment(department);
-        
+
         List<StudentStatus> statusList = sessions.stream()
                 .map(this::convertToStudentStatus)
                 .toList();
@@ -105,9 +109,9 @@ public class MonitoringRestController {
             @PathVariable Long sessionId,
             @RequestBody TerminationRequest request,
             @AuthenticationPrincipal CustomUserDetails moderator) {
-        
+
         ExamSession session = sessionManager.getSession(sessionId);
-        
+
         if (session == null) {
             return ResponseEntity.notFound().build();
         }
@@ -117,7 +121,7 @@ public class MonitoringRestController {
             securityService.verifyDepartmentAccess(session.getDepartment());
         }
 
-        log.warn("Moderator {} terminating session {} for student {}: {}", 
+        log.warn("Moderator {} terminating session {} for student {}: {}",
                 moderator.getId(), sessionId, session.getStudentId(), request.reason());
 
         // Terminate session
@@ -125,10 +129,9 @@ public class MonitoringRestController {
 
         // Notify student
         broadcastService.sendToStudent(
-                session.getStudentId(), 
+                session.getStudentId(),
                 "termination",
-                new TerminationNotice(request.reason(), LocalDateTime.now())
-        );
+                new TerminationNotice(request.reason(), LocalDateTime.now()));
 
         // Broadcast to moderators
         broadcastService.broadcastTermination(session.getExamId(), session.getStudentId(), request.reason());
@@ -145,12 +148,13 @@ public class MonitoringRestController {
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
     public ResponseEntity<MonitoringStats> getMonitoringStats() {
         long activeCount = sessionManager.getActiveSessionCount();
-        
+        long totalViolations = violationService.countTotalViolations();
+        long terminatedCount = sessionManager.getTerminatedSessionCount(); // Assuming this method exists or we use 0
+
         MonitoringStats stats = new MonitoringStats(
                 activeCount,
-                0L, // TODO: Get from violation service
-                0L  // TODO: Get terminated count
-        );
+                totalViolations,
+                terminatedCount);
 
         return ResponseEntity.ok(stats);
     }
@@ -161,9 +165,8 @@ public class MonitoringRestController {
         status.setStudentName(session.getStudentName());
         status.setEmail(null);
         status.setSessionId(session.getId());
-        status.setConnectionStatus(session.isHeartbeatStale() ? 
-                StudentStatus.ConnectionStatus.OFFLINE : 
-                StudentStatus.ConnectionStatus.ONLINE);
+        status.setConnectionStatus(session.isHeartbeatStale() ? StudentStatus.ConnectionStatus.OFFLINE
+                : StudentStatus.ConnectionStatus.ONLINE);
         status.setActivityStatus(StudentStatus.ActivityStatus.IDLE);
         status.setViolationCount(session.getViolationCount());
         // Calculate status color based on violation count
@@ -184,7 +187,12 @@ public class MonitoringRestController {
     }
 
     // DTOs
-    public record TerminationRequest(String reason) {}
-    public record TerminationNotice(String reason, LocalDateTime terminatedAt) {}
-    public record MonitoringStats(long activeSessions, long totalViolations, long terminatedSessions) {}
+    public record TerminationRequest(String reason) {
+    }
+
+    public record TerminationNotice(String reason, LocalDateTime terminatedAt) {
+    }
+
+    public record MonitoringStats(long activeSessions, long totalViolations, long terminatedSessions) {
+    }
 }

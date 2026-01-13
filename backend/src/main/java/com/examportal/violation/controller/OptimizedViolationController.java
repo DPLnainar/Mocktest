@@ -1,6 +1,5 @@
 package com.examportal.violation.controller;
 
-import com.examportal.security.CustomUserDetails;
 import com.examportal.violation.dto.KeysetPageResponse;
 import com.examportal.violation.entity.Violation;
 import com.examportal.violation.service.OptimizedViolationQueryService;
@@ -8,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -23,7 +22,6 @@ import java.util.List;
 @RequestMapping("/api/violations/optimized")
 public class OptimizedViolationController {
 
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OptimizedViolationController.class);
     private final OptimizedViolationQueryService queryService;
 
     public OptimizedViolationController(OptimizedViolationQueryService queryService) {
@@ -33,7 +31,8 @@ public class OptimizedViolationController {
     /**
      * Get session violations with keyset pagination
      * 
-     * GET /api/violations/optimized/session/{sessionId}?cursor=2025-12-31T10:30:00&size=20
+     * GET
+     * /api/violations/optimized/session/{sessionId}?cursor=2025-12-31T10:30:00&size=20
      */
     @GetMapping("/session/{sessionId}")
     @PreAuthorize("hasAnyRole('STUDENT', 'MODERATOR', 'ADMIN')")
@@ -41,25 +40,25 @@ public class OptimizedViolationController {
             @PathVariable Long sessionId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
             @RequestParam(defaultValue = "20") int size) {
-        
+
         Page<Violation> page = queryService.getSessionViolationsWithKeyset(sessionId, cursor, size);
-        
-        LocalDateTime nextCursor = page.hasContent() 
+
+        LocalDateTime nextCursor = page.hasContent()
                 ? page.getContent().get(page.getContent().size() - 1).getTimestamp()
                 : null;
-        
+
         return ResponseEntity.ok(KeysetPageResponse.of(
                 page.getContent(),
                 nextCursor,
                 page.hasNext(),
-                size
-        ));
+                size));
     }
 
     /**
      * Get exam violations with keyset pagination
      * 
-     * GET /api/violations/optimized/exam/{examId}?cursor=2025-12-31T10:30:00&size=50
+     * GET
+     * /api/violations/optimized/exam/{examId}?cursor=2025-12-31T10:30:00&size=50
      */
     @GetMapping("/exam/{examId}")
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
@@ -67,19 +66,18 @@ public class OptimizedViolationController {
             @PathVariable Long examId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
             @RequestParam(defaultValue = "50") int size) {
-        
+
         Page<Violation> page = queryService.getExamViolationsWithKeyset(examId, cursor, size);
-        
-        LocalDateTime nextCursor = page.hasContent() 
+
+        LocalDateTime nextCursor = page.hasContent()
                 ? page.getContent().get(page.getContent().size() - 1).getTimestamp()
                 : null;
-        
+
         return ResponseEntity.ok(KeysetPageResponse.of(
                 page.getContent(),
                 nextCursor,
                 page.hasNext(),
-                size
-        ));
+                size));
     }
 
     /**
@@ -104,7 +102,7 @@ public class OptimizedViolationController {
     public ResponseEntity<List<Violation>> getHighConfidenceViolations(
             @PathVariable Long examId,
             @RequestParam(defaultValue = "100") int limit) {
-        
+
         List<Violation> violations = queryService.getHighConfidenceViolations(examId, limit);
         return ResponseEntity.ok(violations);
     }
@@ -119,19 +117,18 @@ public class OptimizedViolationController {
     public ResponseEntity<KeysetPageResponse<List<Violation>>> getUnconfirmedViolations(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since,
             @RequestParam(defaultValue = "50") int size) {
-        
+
         Page<Violation> page = queryService.getUnconfirmedViolations(since, size);
-        
-        LocalDateTime nextCursor = page.hasContent() 
+
+        LocalDateTime nextCursor = page.hasContent()
                 ? page.getContent().get(page.getContent().size() - 1).getTimestamp()
                 : null;
-        
+
         return ResponseEntity.ok(KeysetPageResponse.of(
                 page.getContent(),
                 nextCursor,
                 page.hasNext(),
-                size
-        ));
+                size));
     }
 
     /**
@@ -168,25 +165,25 @@ public class OptimizedViolationController {
     public ResponseEntity<KeysetPageResponse<List<Violation>>> getAllRecentViolations(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
             @RequestParam(defaultValue = "100") int size) {
-        
+
         Page<Violation> page = queryService.getAllRecentViolations(cursor, size);
-        
-        LocalDateTime nextCursor = page.hasContent() 
+
+        LocalDateTime nextCursor = page.hasContent()
                 ? page.getContent().get(page.getContent().size() - 1).getTimestamp()
                 : null;
-        
+
         return ResponseEntity.ok(KeysetPageResponse.of(
                 page.getContent(),
                 nextCursor,
                 page.hasNext(),
-                size
-        ));
+                size));
     }
 
     /**
      * Count student violations in date range
      * 
-     * GET /api/violations/optimized/student/{studentId}/count?start=2025-01-01T00:00:00&end=2025-12-31T23:59:59
+     * GET
+     * /api/violations/optimized/student/{studentId}/count?start=2025-01-01T00:00:00&end=2025-12-31T23:59:59
      */
     @GetMapping("/student/{studentId}/count")
     @PreAuthorize("hasAnyRole('MODERATOR', 'ADMIN')")
@@ -194,7 +191,7 @@ public class OptimizedViolationController {
             @PathVariable Long studentId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        
+
         Long count = queryService.countStudentViolations(studentId, start, end);
         return ResponseEntity.ok(count);
     }
@@ -204,15 +201,28 @@ public class OptimizedViolationController {
         private List<Long> violationIds;
         private boolean confirmed;
 
-        public BatchConfirmRequest() {}
+        public BatchConfirmRequest() {
+        }
+
         public BatchConfirmRequest(List<Long> violationIds, boolean confirmed) {
             this.violationIds = violationIds;
             this.confirmed = confirmed;
         }
 
-        public List<Long> getViolationIds() { return violationIds; }
-        public void setViolationIds(List<Long> violationIds) { this.violationIds = violationIds; }
-        public boolean isConfirmed() { return confirmed; }
-        public void setConfirmed(boolean confirmed) { this.confirmed = confirmed; }
+        public List<Long> getViolationIds() {
+            return violationIds;
+        }
+
+        public void setViolationIds(List<Long> violationIds) {
+            this.violationIds = violationIds;
+        }
+
+        public boolean isConfirmed() {
+            return confirmed;
+        }
+
+        public void setConfirmed(boolean confirmed) {
+            this.confirmed = confirmed;
+        }
     }
 }

@@ -159,11 +159,39 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Apache POI for Excel processing -->
+        <!-- Apache POI for Excel/Word processing -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>5.2.5</version>
+        </dependency>
+
+        <!-- PDF Parsing -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
+        <!-- CSV Parsing -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.9</version>
+        </dependency>
+
+        <!-- AWS SDK for S3 (MinIO Support) -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.12.638</version>
+        </dependency>
+
+        <!-- MinIO Java Client -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.7</version>
         </dependency>
     </dependencies>
 
@@ -183,7 +211,7 @@
                     <sourceDirectory>src/main/antlr4</sourceDirectory>
                     <outputDirectory>target/generated-sources/antlr4</outputDirectory>
                     <visitor>true</visitor>
-                    <listener>false</listener>
+                    <listener>true</listener>
                 </configuration>
                 <executions>
                     <execution>

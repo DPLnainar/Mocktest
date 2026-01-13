@@ -26,7 +26,8 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public DatabaseInitializer(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public DatabaseInitializer(RoleRepository roleRepository, UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -36,6 +37,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     public void run(String... args) {
         initializeRoles();
         initializeAdminUser();
+        initializeModeratorUser();
         initializeTestStudent();
         log.info("Database initialization complete!");
     }
@@ -71,10 +73,10 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     private void initializeAdminUser() {
         String adminEmail = "admin@examportal.com";
-        
+
         if (userRepository.findByEmail(adminEmail).isEmpty()) {
             Role adminRole = roleRepository.findByName(Role.ADMIN)
-                .orElseThrow(() -> new RuntimeException("Admin role not found"));
+                    .orElseThrow(() -> new RuntimeException("Admin role not found"));
 
             Set<Role> roles = new HashSet<>();
             roles.add(adminRole);
@@ -82,7 +84,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             User admin = new User();
             admin.setUsername("admin");
             admin.setEmail(adminEmail);
-            admin.setPassword(passwordEncoder.encode("Admin@123"));
+            admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setFirstName("System");
             admin.setLastName("Administrator");
             admin.setProfile("ADMIN");
@@ -95,21 +97,48 @@ public class DatabaseInitializer implements CommandLineRunner {
             admin.getUserRoles().add(userRole);
 
             userRepository.save(admin);
-            log.info("Created admin user - Email: {}, Password: Admin@123", adminEmail);
+            log.info("Created admin user - Email: {}, Password: admin123", adminEmail);
+        }
+    }
+
+    private void initializeModeratorUser() {
+        String modEmail = "moderator@examportal.com";
+
+        if (userRepository.findByEmail(modEmail).isEmpty()) {
+            Role modRole = roleRepository.findByName(Role.MODERATOR)
+                    .orElseThrow(() -> new RuntimeException("Moderator role not found"));
+
+            User moderator = new User();
+            moderator.setUsername("moderator");
+            moderator.setEmail(modEmail);
+            moderator.setPassword(passwordEncoder.encode("moderator123"));
+            moderator.setFirstName("Test");
+            moderator.setLastName("Moderator");
+            moderator.setDepartment("CSE");
+            moderator.setProfile("MODERATOR");
+            moderator.setEnabled(true);
+
+            UserRole userRole = new UserRole();
+            userRole.setUser(moderator);
+            userRole.setRole(modRole);
+            moderator.getUserRoles().add(userRole);
+
+            userRepository.save(moderator);
+            log.info("Created test moderator - Email: {}, Password: moderator123", modEmail);
         }
     }
 
     private void initializeTestStudent() {
         String studentEmail = "student@examportal.com";
-        
+
         if (userRepository.findByEmail(studentEmail).isEmpty()) {
             Role studentRole = roleRepository.findByName(Role.STUDENT)
-                .orElseThrow(() -> new RuntimeException("Student role not found"));
+                    .orElseThrow(() -> new RuntimeException("Student role not found"));
 
             User student = new User();
             student.setUsername("student");
             student.setEmail(studentEmail);
-            student.setPassword(passwordEncoder.encode("Student@123"));
+            student.setPassword(passwordEncoder.encode("student123"));
             student.setFirstName("Test");
             student.setLastName("Student");
             student.setDepartment("CSE");
@@ -123,7 +152,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             student.getUserRoles().add(userRole);
 
             userRepository.save(student);
-            log.info("Created test student - Email: {}, Password: Student@123", studentEmail);
+            log.info("Created test student - Email: {}, Password: student123", studentEmail);
         }
     }
 }

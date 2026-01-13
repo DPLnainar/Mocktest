@@ -1,6 +1,5 @@
 package com.examportal.security;
 
-import com.examportal.entity.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,24 +12,25 @@ import org.springframework.stereotype.Service;
  * Ensures ECE moderators cannot see CSE data
  * 
  * Usage:
- *   Specification<Exam> spec = departmentSecurityService.hasDepartmentAccess();
- *   examRepository.findAll(spec);
+ * Specification<Exam> spec = departmentSecurityService.hasDepartmentAccess();
+ * examRepository.findAll(spec);
  */
 @Service
 public class DepartmentSecurityService {
 
-    public DepartmentSecurityService() {}
+    public DepartmentSecurityService() {
+    }
 
     /**
      * Get current authenticated user's department
      */
     public String getCurrentUserDepartment() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
             return userDetails.getDepartment();
         }
-        
+
         throw new IllegalStateException("No authenticated user found");
     }
 
@@ -39,11 +39,11 @@ public class DepartmentSecurityService {
      */
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails userDetails) {
             return userDetails.getId();
         }
-        
+
         throw new IllegalStateException("No authenticated user found");
     }
 
@@ -52,12 +52,12 @@ public class DepartmentSecurityService {
      */
     public boolean isCurrentUserAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        
+
         if (authentication != null) {
             return authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+                    .anyMatch(auth -> auth.getAuthority().equals("ADMIN"));
         }
-        
+
         return false;
     }
 
@@ -70,7 +70,7 @@ public class DepartmentSecurityService {
             if (isCurrentUserAdmin()) {
                 return criteriaBuilder.conjunction(); // No restriction for admins
             }
-            
+
             String userDepartment = getCurrentUserDepartment();
             return criteriaBuilder.equal(root.get(departmentField), userDepartment);
         };
@@ -84,13 +84,12 @@ public class DepartmentSecurityService {
         if (isCurrentUserAdmin()) {
             return; // Admins have access to all departments
         }
-        
+
         String userDepartment = getCurrentUserDepartment();
         if (!userDepartment.equalsIgnoreCase(targetDepartment)) {
             throw new SecurityException(
-                String.format("Access denied: User from %s cannot access %s data", 
-                    userDepartment, targetDepartment)
-            );
+                    String.format("Access denied: User from %s cannot access %s data",
+                            userDepartment, targetDepartment));
         }
     }
 }

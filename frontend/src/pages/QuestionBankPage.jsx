@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTestStore } from '../store/testStore';
 import toast from 'react-hot-toast';
+import QuestionForm from '../components/QuestionForm';
 
 export default function QuestionBankPage() {
     const { questions, loading, fetchQuestions, createQuestion, bulkUploadQuestions } = useTestStore();
@@ -125,171 +126,38 @@ function QuestionCard({ question }) {
 
 function CreateQuestionModal({ onClose }) {
     const { createQuestion } = useTestStore();
-    const [formData, setFormData] = useState({
-        type: 'MCQ',
-        questionText: '',
-        marks: 1,
-        optionA: '',
-        optionB: '',
-        optionC: '',
-        optionD: '',
-        correctOption: 'A',
-        languageId: 62, // Java
-        starterCode: '',
-    });
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (formData) => {
+        setLoading(true);
         try {
             await createQuestion(formData);
             onClose();
         } catch (error) {
             // Error handled in store
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <h2 className="text-2xl font-bold text-white mb-6">Create Question</h2>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-white">Create Question</h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl">&times;</button>
+                </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-gray-300 mb-2">Question Type</label>
-                        <select
-                            value={formData.type}
-                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                            className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                        >
-                            <option value="MCQ">Multiple Choice (MCQ)</option>
-                            <option value="CODING">Coding Question</option>
-                        </select>
-                    </div>
+                <QuestionForm onSubmit={handleSubmit} loading={loading} />
 
-                    <div>
-                        <label className="block text-gray-300 mb-2">Question Text *</label>
-                        <textarea
-                            required
-                            value={formData.questionText}
-                            onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
-                            className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                            rows="3"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-gray-300 mb-2">Marks *</label>
-                        <input
-                            type="number"
-                            required
-                            min="1"
-                            value={formData.marks}
-                            onChange={(e) => setFormData({ ...formData, marks: parseInt(e.target.value) })}
-                            className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                        />
-                    </div>
-
-                    {formData.type === 'MCQ' && (
-                        <>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-gray-300 mb-2">Option A *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.optionA}
-                                        onChange={(e) => setFormData({ ...formData, optionA: e.target.value })}
-                                        className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-300 mb-2">Option B *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.optionB}
-                                        onChange={(e) => setFormData({ ...formData, optionB: e.target.value })}
-                                        className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-300 mb-2">Option C *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.optionC}
-                                        onChange={(e) => setFormData({ ...formData, optionC: e.target.value })}
-                                        className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-300 mb-2">Option D *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.optionD}
-                                        onChange={(e) => setFormData({ ...formData, optionD: e.target.value })}
-                                        className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-gray-300 mb-2">Correct Answer *</label>
-                                <select
-                                    value={formData.correctOption}
-                                    onChange={(e) => setFormData({ ...formData, correctOption: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                                >
-                                    <option value="A">A</option>
-                                    <option value="B">B</option>
-                                    <option value="C">C</option>
-                                    <option value="D">D</option>
-                                </select>
-                            </div>
-                        </>
-                    )}
-
-                    {formData.type === 'CODING' && (
-                        <>
-                            <div>
-                                <label className="block text-gray-300 mb-2">Language ID (Judge0) *</label>
-                                <input
-                                    type="number"
-                                    required
-                                    value={formData.languageId}
-                                    onChange={(e) => setFormData({ ...formData, languageId: parseInt(e.target.value) })}
-                                    className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none"
-                                    placeholder="e.g., 62 for Java, 71 for Python"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-gray-300 mb-2">Starter Code (optional)</label>
-                                <textarea
-                                    value={formData.starterCode}
-                                    onChange={(e) => setFormData({ ...formData, starterCode: e.target.value })}
-                                    className="w-full px-4 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:border-blue-500 focus:outline-none font-mono text-sm"
-                                    rows="5"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    <div className="flex gap-3 pt-4">
-                        <button
-                            type="submit"
-                            className="flex-1 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-semibold"
-                        >
-                            Create Question
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </form>
+                <div className="mt-4">
+                    <button
+                        onClick={onClose}
+                        className="w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition"
+                    >
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -5,7 +5,6 @@ import com.examportal.parser.model.VerificationRule;
 import com.examportal.parser.service.ParserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.antlr.v4.runtime.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -55,7 +54,7 @@ public class JavaParserService implements ParserService {
         }
 
         result.setParsingTimeMs(System.currentTimeMillis() - startTime);
-        log.debug("Code verification completed in {}ms. Passed: {}", 
+        log.debug("Code verification completed in {}ms. Passed: {}",
                 result.getParsingTimeMs(), result.isPassed());
 
         return result;
@@ -104,8 +103,8 @@ public class JavaParserService implements ParserService {
         }
     }
 
-    private void checkForbiddenMethod(String code, String[] lines, VerificationRule rule, 
-                                     Pattern pattern, VerificationResult result) {
+    private void checkForbiddenMethod(String code, String[] lines, VerificationRule rule,
+            Pattern pattern, VerificationResult result) {
         java.util.regex.Matcher matcher = pattern.matcher(code);
         if (matcher.find()) {
             int lineNumber = getLineNumber(code, matcher.start());
@@ -115,15 +114,14 @@ public class JavaParserService implements ParserService {
                     .rule(rule)
                     .lineNumber(lineNumber)
                     .codeSnippet(snippet)
-                    .message(rule.getErrorMessage() != null ? 
-                            rule.getErrorMessage() : 
-                            "Forbidden construct found: " + rule.getConstruct())
+                    .message(rule.getErrorMessage() != null ? rule.getErrorMessage()
+                            : "Forbidden construct found: " + rule.getConstruct())
                     .build());
         }
     }
 
-    private void checkForbiddenConstruct(String code, String[] lines, VerificationRule rule, 
-                                        Pattern pattern, String constructName, VerificationResult result) {
+    private void checkForbiddenConstruct(String code, String[] lines, VerificationRule rule,
+            Pattern pattern, String constructName, VerificationResult result) {
         java.util.regex.Matcher matcher = pattern.matcher(code);
         if (matcher.find()) {
             int lineNumber = getLineNumber(code, matcher.start());
@@ -133,7 +131,7 @@ public class JavaParserService implements ParserService {
                     .rule(rule)
                     .lineNumber(lineNumber)
                     .codeSnippet(snippet)
-                    .message(String.format("Forbidden: %s usage detected. %s", 
+                    .message(String.format("Forbidden: %s usage detected. %s",
                             constructName, rule.getErrorMessage()))
                     .build());
         }
@@ -149,13 +147,15 @@ public class JavaParserService implements ParserService {
         while (methodMatcher.find()) {
             String methodName = methodMatcher.group(2);
             int methodStart = methodMatcher.end();
-            
+
             // Find method end (simplified - looks for matching brace)
             int braceCount = 1;
             int methodEnd = methodStart;
             for (int i = methodStart; i < code.length() && braceCount > 0; i++) {
-                if (code.charAt(i) == '{') braceCount++;
-                if (code.charAt(i) == '}') braceCount--;
+                if (code.charAt(i) == '{')
+                    braceCount++;
+                if (code.charAt(i) == '}')
+                    braceCount--;
                 methodEnd = i;
             }
 
@@ -172,9 +172,8 @@ public class JavaParserService implements ParserService {
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
-                    .message(rule.getErrorMessage() != null ? 
-                            rule.getErrorMessage() : 
-                            "Required: Solution must use recursion")
+                    .message(rule.getErrorMessage() != null ? rule.getErrorMessage()
+                            : "Required: Solution must use recursion")
                     .build());
         }
     }
@@ -182,9 +181,10 @@ public class JavaParserService implements ParserService {
     private void checkBubbleSortLogic(String code, String[] lines, VerificationRule rule, VerificationResult result) {
         // Check for nested loops (characteristic of bubble sort)
         Pattern nestedLoopPattern = Pattern.compile("for\\s*\\([^)]*\\)\\s*\\{[^}]*for\\s*\\([^)]*\\)", Pattern.DOTALL);
-        
+
         boolean hasNestedLoops = nestedLoopPattern.matcher(code).find();
-        boolean hasSwapping = code.contains("temp") || Pattern.compile("\\w+\\s*=\\s*\\w+;[^;]*\\w+\\s*=\\s*\\w+;").matcher(code).find();
+        boolean hasSwapping = code.contains("temp")
+                || Pattern.compile("\\w+\\s*=\\s*\\w+;[^;]*\\w+\\s*=\\s*\\w+;").matcher(code).find();
 
         if (!hasNestedLoops || !hasSwapping) {
             result.getViolations().add(VerificationResult.Violation.builder()
@@ -196,17 +196,16 @@ public class JavaParserService implements ParserService {
         }
     }
 
-    private void checkRequiredPattern(String code, String[] lines, VerificationRule rule, 
-                                     Pattern pattern, VerificationResult result) {
+    private void checkRequiredPattern(String code, String[] lines, VerificationRule rule,
+            Pattern pattern, VerificationResult result) {
         java.util.regex.Matcher matcher = pattern.matcher(code);
         if (!matcher.find() && rule.getType() == VerificationRule.RuleType.REQUIRED) {
             result.getViolations().add(VerificationResult.Violation.builder()
                     .rule(rule)
                     .lineNumber(1)
                     .codeSnippet("(entire code)")
-                    .message(rule.getErrorMessage() != null ? 
-                            rule.getErrorMessage() : 
-                            "Required construct not found: " + rule.getConstruct())
+                    .message(rule.getErrorMessage() != null ? rule.getErrorMessage()
+                            : "Required construct not found: " + rule.getConstruct())
                     .build());
         }
     }
@@ -231,12 +230,24 @@ public class JavaParserService implements ParserService {
 
             for (char c : code.toCharArray()) {
                 switch (c) {
-                    case '{': braceCount++; break;
-                    case '}': braceCount--; break;
-                    case '(': parenCount++; break;
-                    case ')': parenCount--; break;
-                    case '[': bracketCount++; break;
-                    case ']': bracketCount--; break;
+                    case '{':
+                        braceCount++;
+                        break;
+                    case '}':
+                        braceCount--;
+                        break;
+                    case '(':
+                        parenCount++;
+                        break;
+                    case ')':
+                        parenCount--;
+                        break;
+                    case '[':
+                        bracketCount++;
+                        break;
+                    case ']':
+                        bracketCount--;
+                        break;
                 }
             }
 

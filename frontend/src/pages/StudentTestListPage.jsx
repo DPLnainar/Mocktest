@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import api from '../services/api';
 import { useTestStore } from '../store/testStore';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -8,10 +9,22 @@ export default function StudentTestListPage() {
     const { tests, loading, fetchAvailableTests } = useTestStore();
     const { logout } = useAuthStore();
     const navigate = useNavigate();
+    const [completedTestIds, setCompletedTestIds] = useState(new Set());
 
     useEffect(() => {
         fetchAvailableTests();
+        fetchHistory();
     }, []);
+
+    const fetchHistory = async () => {
+        try {
+            const { data } = await api.get('/student/history');
+            const completed = new Set(data.map(attempt => attempt.testId));
+            setCompletedTestIds(completed);
+        } catch (error) {
+            console.error('Failed to fetch history:', error);
+        }
+    };
 
     const handleLogout = () => {
         if (window.confirm('Are you sure you want to logout?')) {
@@ -76,7 +89,13 @@ export default function StudentTestListPage() {
                         </h2>
                         <div className="grid gap-4">
                             {active.map((test) => (
-                                <TestCard key={test.id} test={test} status="active" navigate={navigate} />
+                                <TestCard
+                                    key={test.id}
+                                    test={test}
+                                    status="active"
+                                    navigate={navigate}
+                                    isCompleted={completedTestIds.has(test.id)}
+                                />
                             ))}
                         </div>
                     </section>
@@ -117,7 +136,7 @@ export default function StudentTestListPage() {
     );
 }
 
-function TestCard({ test, status, navigate }) {
+function TestCard({ test, status, navigate, isCompleted }) {
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
         return date.toLocaleString('en-US', {
@@ -153,8 +172,16 @@ function TestCard({ test, status, navigate }) {
                 <div>
                     <h3 className="text-2xl font-semibold text-white mb-2">{test.title}</h3>
                     {test.description && (
-                        <p className="text-gray-400">{test.description}</p>
+                        <p className="text-gray-400 mb-2">{test.description}</p>
                     )}
+                    <div className="flex gap-2">
+                        <span className={`px-3 py-1 text-xs rounded-full border ${test.type === 'MCQ_ONLY' ? 'border-purple-500 text-purple-400' :
+                            test.type === 'CODING_ONLY' ? 'border-blue-500 text-blue-400' :
+                                'border-green-500 text-green-400'
+                            }`}>
+                            {test.type?.replace('_ONLY', '')}
+                        </span>
+                    </div>
                 </div>
                 <span className={`px-4 py-2 rounded-full font-semibold ${status === 'active' ? 'bg-green-600 text-white' :
                     status === 'upcoming' ? 'bg-yellow-600 text-white' :
@@ -183,12 +210,21 @@ function TestCard({ test, status, navigate }) {
             {status === 'active' && (
                 <>
                     <p className="text-yellow-400 mb-4 font-medium">{getTimeDifference()}</p>
-                    <button
-                        onClick={handleStartTest}
-                        className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-bold text-lg"
-                    >
-                        Start Test →
-                    </button>
+                    {isCompleted ? (
+                        <button
+                            onClick={() => navigate('/student/history')}
+                            className="w-full px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition font-bold text-lg border border-gray-600"
+                        >
+                            View Results (Completed)
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleStartTest}
+                            className="w-full px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-bold text-lg"
+                        >
+                            Start Test →
+                        </button>
+                    )}
                 </>
             )}
 

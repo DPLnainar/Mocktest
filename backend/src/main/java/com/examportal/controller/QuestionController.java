@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/questions")
@@ -49,16 +50,28 @@ public class QuestionController {
     @PostMapping("/bulk-upload")
     public ResponseEntity<BulkUploadResult> bulkUpload(
             @RequestParam("file") MultipartFile file) {
-        
+
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
-        
-        if (!file.getOriginalFilename().endsWith(".xlsx")) {
-            throw new RuntimeException("Only .xlsx files are supported");
-        }
-        
-        BulkUploadResult result = questionService.bulkUploadFromExcel(file);
+
+        BulkUploadResult result = questionService.bulkUpload(file);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/paste-upload")
+    public ResponseEntity<BulkUploadResult> pasteUpload(@RequestBody Map<String, String> payload) {
+        String text = payload.get("text");
+        if (text == null || text.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        BulkUploadResult result = questionService.processTextPaste(text);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{id}/clone")
+    public ResponseEntity<QuestionDTO> cloneQuestion(@PathVariable Long id) {
+        QuestionDTO cloned = questionService.cloneQuestion(id);
+        return ResponseEntity.status(HttpStatus.CREATED).body(cloned);
     }
 }

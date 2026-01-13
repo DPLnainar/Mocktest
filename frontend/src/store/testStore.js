@@ -8,6 +8,13 @@ export const useTestStore = create((set, get) => ({
     currentTest: null,
     currentAttempt: null,
     loading: false,
+    violations: [],
+
+    addViolation: (violation) => set((state) => ({
+        violations: [...state.violations, violation]
+    })),
+
+    clearViolations: () => set({ violations: [] }),
 
     // Moderator actions
     fetchTests: async () => {
@@ -40,6 +47,24 @@ export const useTestStore = create((set, get) => ({
             toast.success('Test deleted successfully');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to delete test');
+            throw error;
+        }
+    },
+
+    updateTestQuestions: async (testId, testQuestions) => {
+        try {
+            const currentTest = get().tests.find(t => t.id === testId);
+            const { data } = await testAPI.updateTest(testId, {
+                ...currentTest,
+                testQuestions
+            });
+            set((state) => ({
+                tests: state.tests.map((t) => (t.id === testId ? data : t))
+            }));
+            toast.success('Questions updated successfully');
+            return data;
+        } catch (error) {
+            toast.error('Failed to update questions');
             throw error;
         }
     },
@@ -78,7 +103,19 @@ export const useTestStore = create((set, get) => ({
             await get().fetchQuestions(); // Refresh list
             return data;
         } catch (error) {
-            toast.error('Failed to upload questions');
+            toast.error(error.response?.data?.message || 'Failed to upload questions');
+            throw error;
+        }
+    },
+
+    pasteQuestions: async (text) => {
+        try {
+            const { data } = await questionAPI.pasteQuestions(text);
+            toast.success(`Processed ${data.successCount} questions. ${data.errorCount} errors.`);
+            await get().fetchQuestions();
+            return data;
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to paste questions');
             throw error;
         }
     },
@@ -127,9 +164,9 @@ export const useTestStore = create((set, get) => ({
         }
     },
 
-    executeCode: async (attemptId, questionId, code, stdin = '') => {
+    executeCode: async (attemptId, questionId, code, languageId, stdin = '') => {
         try {
-            const { data } = await testAPI.executeCode(attemptId, { questionId, code, stdin });
+            const { data } = await testAPI.executeCode(attemptId, { questionId, code, languageId, stdin });
             return data;
         } catch (error) {
             toast.error('Code execution failed');

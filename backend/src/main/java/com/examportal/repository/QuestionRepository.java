@@ -9,10 +9,10 @@ import java.util.List;
 
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
-    
+
     List<Question> findByDepartment(String department);
-    
+
     List<Question> findByDepartmentAndType(String department, QuestionType type);
-    
+
     List<Question> findByIdIn(List<Long> ids);
 }

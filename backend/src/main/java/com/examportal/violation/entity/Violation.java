@@ -15,35 +15,37 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Violation {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private Long studentId;
     private Long sessionId;
     private Long examId;
-    
+
     @Enumerated(EnumType.STRING)
     private ViolationType type;
-    
+
     @Enumerated(EnumType.STRING)
     private ViolationType violationType;
-    
+
     private String screenshotUrl;
     private String message;
-    
+
     @Column(columnDefinition = "TEXT")
     @Convert(converter = MapToJsonConverter.class)
     private Map<String, Object> evidence;
-    
+
     @Enumerated(EnumType.STRING)
     private Severity severity;
-    
+
     private LocalDateTime timestamp;
     private LocalDateTime detectedAt;
-    
+
+    @Builder.Default
     private Boolean confirmed = false;
+    @Builder.Default
     private Integer strikeCount = 1;
 
     // These Enums were missing!

@@ -22,7 +22,8 @@ public class FileStorageService {
     private final ScreenRecordingRepository recordingRepository;
     private static final String UPLOAD_DIR = "uploads/recordings";
 
-    public ScreenRecording saveRecordingChunk(Long attemptId, Integer chunkNumber, MultipartFile file) throws IOException {
+    public ScreenRecording saveRecordingChunk(Long attemptId, Integer chunkNumber, MultipartFile file)
+            throws IOException {
         // Create directory if it doesn't exist
         Path uploadPath = Paths.get(UPLOAD_DIR, "attempt-" + attemptId);
         if (!Files.exists(uploadPath)) {
@@ -34,7 +35,7 @@ public class FileStorageService {
         Path filePath = uploadPath.resolve(fileName);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        log.info("Saved recording chunk {} for attempt {}, size: {} bytes", 
+        log.info("Saved recording chunk {} for attempt {}, size: {} bytes",
                 chunkNumber, attemptId, file.getSize());
 
         // Save metadata to database
@@ -45,7 +46,7 @@ public class FileStorageService {
                 .fileSize(file.getSize())
                 .build();
 
-        return recordingRepository.save(recording);
+        return recordingRepository.save(java.util.Objects.requireNonNull(recording));
     }
 
     public List<ScreenRecording> getRecordingsForAttempt(Long attemptId) {

@@ -1,9 +1,13 @@
 package com.examportal.controller;
 
 import com.examportal.dto.AnswerSubmissionDTO;
+import com.examportal.dto.QueuePositionResponse;
 import com.examportal.dto.TestDTO;
 import com.examportal.entity.StudentAttempt;
+import com.examportal.exception.RateLimitExceededException;
 import com.examportal.execution.model.ExecutionResult;
+import com.examportal.service.QueueMetricsService;
+import com.examportal.service.RateLimitService;
 import com.examportal.service.TestAttemptService;
 import com.examportal.service.TestService;
 import jakarta.validation.Valid;
@@ -24,6 +28,8 @@ public class StudentTestController {
 
     private final TestService testService;
     private final TestAttemptService attemptService;
+    private final RateLimitService rateLimitService;
+    private final QueueMetricsService queueMetricsService;
 
     @GetMapping("/tests")
     public ResponseEntity<List<TestDTO>> getAvailableTests() {
@@ -66,12 +72,41 @@ public class StudentTestController {
     public ResponseEntity<ExecutionResult> executeCode(
             @PathVariable Long attemptId,
             @RequestBody CodeExecutionRequest request) {
+
+        // Get current student ID from security context
+        Long studentId = attemptService.getAttemptForTest(attemptId).getStudentId();
+
+        // Rate limit check
+        if (!rateLimitService.allowRequest(studentId)) {
+            long retryAfter = rateLimitService.getRetryAfterSeconds(studentId);
+            throw new RateLimitExceededException(
+                    "Too many submissions. Please wait " + retryAfter + " seconds.",
+                    retryAfter);
+        }
+
         ExecutionResult result = attemptService.executeCode(
-            attemptId,
-            request.getQuestionId(),
-            request.getCode(),
-            request.getStdin()
-        );
+                attemptId,
+                request.getQuestionId(),
+                request.getCode(),
+                request.getLanguageId(),
+                request.getStdin());
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/attempts/{attemptId}/queue-position")
+    public ResponseEntity<QueuePositionResponse> getQueuePosition(@PathVariable Long attemptId) {
+        QueuePositionResponse position = queueMetricsService.getQueuePosition(attemptId);
+        return ResponseEntity.ok(position);
+    }
+
+    @GetMapping("/attempts/{attemptId}/questions/{questionId}/result")
+    public ResponseEntity<ExecutionResult> getExecutionResult(
+            @PathVariable Long attemptId,
+            @PathVariable Long questionId) {
+        ExecutionResult result = attemptService.getExecutionResult(attemptId, questionId);
+        if (result == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(result);
     }
 
@@ -91,6 +126,7 @@ public class StudentTestController {
     public static class CodeExecutionRequest {
         private Long questionId;
         private String code;
+        private Integer languageId;
         private String stdin;
     }
 }

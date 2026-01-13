@@ -33,10 +33,12 @@ public class MonitoringBroadcastService {
      */
     public void broadcastStudentStatus(Long examId, StudentStatus status) {
         String destination = "/topic/exam/" + examId + "/monitoring";
-        
+
         try {
-            messagingTemplate.convertAndSend(destination, status);
-            log.debug("Broadcast status for student {} to exam {}", status.getStudentId(), examId);
+            if (status != null) {
+                messagingTemplate.convertAndSend(destination, status);
+                log.debug("Broadcast status for student {} to exam {}", status.getStudentId(), examId);
+            }
         } catch (Exception e) {
             log.error("Error broadcasting student status", e);
         }
@@ -47,10 +49,12 @@ public class MonitoringBroadcastService {
      */
     public void broadcastBatchStatus(Long examId, List<StudentStatus> statusList) {
         String destination = "/topic/exam/" + examId + "/monitoring";
-        
+
         try {
-            messagingTemplate.convertAndSend(destination, statusList);
-            log.debug("Broadcast batch status ({} students) to exam {}", statusList.size(), examId);
+            if (statusList != null) {
+                messagingTemplate.convertAndSend(destination, statusList);
+                log.debug("Broadcast batch status ({} students) to exam {}", statusList.size(), examId);
+            }
         } catch (Exception e) {
             log.error("Error broadcasting batch status", e);
         }
@@ -62,10 +66,12 @@ public class MonitoringBroadcastService {
      */
     public void sendToStudent(Long studentId, String messageType, Object payload) {
         String destination = "/user/" + studentId + "/queue/" + messageType;
-        
+
         try {
-            messagingTemplate.convertAndSend(destination, payload);
-            log.debug("Sent {} message to student {}", messageType, studentId);
+            if (payload != null) {
+                messagingTemplate.convertAndSend(destination, payload);
+                log.debug("Sent {} message to student {}", messageType, studentId);
+            }
         } catch (Exception e) {
             log.error("Error sending message to student", e);
         }
@@ -76,10 +82,12 @@ public class MonitoringBroadcastService {
      */
     public void broadcastViolationAlert(Long examId, ViolationAlert alert) {
         String destination = "/topic/exam/" + examId + "/violations";
-        
+
         try {
-            messagingTemplate.convertAndSend(destination, alert);
-            log.info("Broadcast violation alert for student {} to exam {}", alert.studentId(), examId);
+            if (alert != null) {
+                messagingTemplate.convertAndSend(destination, alert);
+                log.info("Broadcast violation alert for student {} to exam {}", alert.studentId(), examId);
+            }
         } catch (Exception e) {
             log.error("Error broadcasting violation alert", e);
         }
@@ -91,7 +99,7 @@ public class MonitoringBroadcastService {
     public void broadcastTermination(Long examId, Long studentId, String reason) {
         TerminationEvent event = new TerminationEvent(studentId, reason, System.currentTimeMillis());
         String destination = "/topic/exam/" + examId + "/terminations";
-        
+
         try {
             messagingTemplate.convertAndSend(destination, event);
             log.info("Broadcast termination for student {} in exam {}", studentId, examId);
@@ -106,7 +114,7 @@ public class MonitoringBroadcastService {
     public void broadcastConnectionStatus(Long examId, Long studentId, StudentStatus.ConnectionStatus status) {
         ConnectionStatusUpdate update = new ConnectionStatusUpdate(studentId, status, System.currentTimeMillis());
         String destination = "/topic/exam/" + examId + "/connections";
-        
+
         try {
             messagingTemplate.convertAndSend(destination, update);
             log.debug("Broadcast connection status {} for student {}", status, studentId);
@@ -116,7 +124,12 @@ public class MonitoringBroadcastService {
     }
 
     // DTOs for specialized messages
-    public record ViolationAlert(Long studentId, String violationType, String description, long timestamp) {}
-    public record TerminationEvent(Long studentId, String reason, long timestamp) {}
-    public record ConnectionStatusUpdate(Long studentId, StudentStatus.ConnectionStatus status, long timestamp) {}
+    public record ViolationAlert(Long studentId, String violationType, String description, long timestamp) {
+    }
+
+    public record TerminationEvent(Long studentId, String reason, long timestamp) {
+    }
+
+    public record ConnectionStatusUpdate(Long studentId, StudentStatus.ConnectionStatus status, long timestamp) {
+    }
 }

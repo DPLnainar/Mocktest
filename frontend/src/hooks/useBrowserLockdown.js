@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';
+import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
@@ -10,23 +11,19 @@ export const useBrowserLockdown = (attemptId, onAutoSubmit) => {
 
     const logViolation = async (eventType, metadata = {}) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.post(
-                `${API_BASE_URL}/proctor/violation`,
+            const response = await api.post(
+                '/proctor/violation',
                 {
                     attemptId,
                     eventType,
                     metadata,
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
                 }
             );
 
             setViolationCount(response.data.violationCount);
 
             if (response.data.shouldAutoSubmit) {
-                toast.error('Too many violations! Test will be auto-submitted.');
+                toast.error('Too many violations! Test has been suspended.');
                 setTimeout(() => {
                     onAutoSubmit?.();
                 }, 2000);
