@@ -62,13 +62,19 @@ export const useIPTracking = (attemptId, isActive = false) => {
 
     const logInitialIP = async (ip) => {
         try {
-            await api.post('/proctor/violation', {
-                attemptId,
-                eventType: 'IP_TRACKED',
-                metadata: {
+            await api.post('/violations/report', {
+                sessionId: attemptId,
+                examId: null, // Will be set by backend from session
+                violationType: 'IP_TRACKED',
+                severity: 'MINOR',
+                message: `Initial IP tracked: ${ip}`,
+                evidence: {
                     ipAddress: ip,
                     timestamp: new Date().toISOString()
-                }
+                },
+                consecutiveFrames: 1,
+                confidence: 1.0,
+                confirmed: true
             });
         } catch (error) {
             console.error('Failed to log IP:', error);
@@ -77,14 +83,20 @@ export const useIPTracking = (attemptId, isActive = false) => {
 
     const logIPViolation = async (newIP, oldIP) => {
         try {
-            await api.post('/proctor/violation', {
-                attemptId,
-                eventType: 'IP_ADDRESS_CHANGED',
-                metadata: {
+            await api.post('/violations/report', {
+                sessionId: attemptId,
+                examId: null, // Will be set by backend from session
+                violationType: 'IP_ADDRESS_CHANGED',
+                severity: 'MAJOR',
+                message: `IP address changed from ${oldIP} to ${newIP}`,
+                evidence: {
                     oldIP,
                     newIP,
                     timestamp: new Date().toISOString()
-                }
+                },
+                consecutiveFrames: 1,
+                confidence: 1.0,
+                confirmed: true
             });
 
             toast.error('⚠️ IP address changed - this has been logged as suspicious');

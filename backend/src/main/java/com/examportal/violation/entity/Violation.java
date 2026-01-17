@@ -48,17 +48,43 @@ public class Violation {
     @Builder.Default
     private Integer strikeCount = 1;
 
-    // These Enums were missing!
+    // Violation Types
     public enum ViolationType {
+        // Tab/Window violations
         TAB_SWITCH,
+        WINDOW_BLUR,
+        FULLSCREEN_EXIT,
+
+        // Face detection violations
         MULTIPLE_FACES,
+        MULTIPLE_FACES_DETECTED,
         NO_FACE,
         NO_FACE_DETECTED,
         UNKNOWN_FACE,
+
+        // Device/Object detection
         MOBILE_DETECTED,
         PHONE_DETECTED,
+        CAMERA_DETECTED,
         PROHIBITED_OBJECT,
-        COPY_PASTE_DETECTED
+        UNAUTHORIZED_OBJECT_DETECTED,
+
+        // Copy/Paste violations
+        COPY_PASTE_DETECTED,
+        LARGE_PASTE,
+        SUSPICIOUS_TYPING_SPEED,
+        RAPID_ANSWER_CHANGES,
+
+        // Screenshot/Screen capture
+        SCREENSHOT_ATTEMPT,
+        SCREEN_CAPTURE_DETECTED,
+
+        // Extension/Browser violations
+        SUSPICIOUS_EXTENSION_DETECTED,
+
+        // Network violations
+        IP_TRACKED,
+        IP_ADDRESS_CHANGED
     }
 
     public enum Severity {

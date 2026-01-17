@@ -42,6 +42,9 @@ const BulkUploadComponent = ({ onSuccess, testType = 'HYBRID', initialTab = 'fil
             const response = await questionAPI.bulkCreate(questions);
             const result = response.data;
 
+            // Attach original parsed questions to result for frontend usage
+            result.parsedQuestions = questions;
+
             processUploadResult(result);
         } catch (error) {
             console.error('Upload error:', error);
@@ -73,6 +76,9 @@ const BulkUploadComponent = ({ onSuccess, testType = 'HYBRID', initialTab = 'fil
             const response = await questionAPI.bulkCreate(questions);
             const result = response.data;
 
+            // Attach original parsed questions to result for frontend usage
+            result.parsedQuestions = questions;
+
             processUploadResult(result);
         } catch (error) {
             console.error('Paste upload error:', error);
@@ -99,7 +105,8 @@ const BulkUploadComponent = ({ onSuccess, testType = 'HYBRID', initialTab = 'fil
         if (normalizedResult.saved > 0) {
             toast.success(`Successfully uploaded ${normalizedResult.saved} questions!`);
             if (onSuccess) {
-                onSuccess(normalizedResult);
+                // Pass parsed questions along with the result for proper UI rendering
+                onSuccess({ ...normalizedResult, parsedQuestions: result.parsedQuestions || [] });
             }
         }
 
@@ -485,7 +492,7 @@ const BulkUploadComponent = ({ onSuccess, testType = 'HYBRID', initialTab = 'fil
                                                         #{error.row || 'N/A'}
                                                     </td>
                                                     <td className="py-3 px-3">
-                                                        {error.reason || error.message || 'Unknown error'}
+                                                        {typeof error === 'string' ? error : (error.reason || error.message || 'Unknown error')}
                                                         {error.details && (
                                                             <span className="block text-xs text-gray-500 mt-1">
                                                                 {error.details}

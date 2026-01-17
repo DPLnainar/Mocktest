@@ -23,7 +23,9 @@ export const useTestStore = create((set, get) => ({
             const { data } = await testAPI.getAllTests();
             set({ tests: data, loading: false });
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to fetch tests');
+            if (!error.message?.includes('Cannot read properties of null')) {
+                toast.error(error.response?.data?.message || 'Failed to fetch tests');
+            }
             set({ loading: false });
         }
     },
@@ -138,7 +140,9 @@ export const useTestStore = create((set, get) => ({
             set({ currentAttempt: data });
             return data;
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to start test');
+            if (!error.message?.includes('Cannot read properties of null')) {
+                toast.error(error.response?.data?.message || 'Failed to start test');
+            }
             throw error;
         }
     },
@@ -149,7 +153,9 @@ export const useTestStore = create((set, get) => ({
             set({ currentAttempt: data });
             return data;
         } catch (error) {
-            if (error.response?.status !== 404) {
+            // Don't show toast for 404 errors or null reference errors
+            if (error.response?.status !== 404 &&
+                !error.message?.includes('Cannot read properties of null')) {
                 toast.error('Failed to fetch attempt');
             }
             throw error;
@@ -181,7 +187,9 @@ export const useTestStore = create((set, get) => ({
             toast.success('Test submitted successfully!');
             return data;
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to submit test');
+            if (!error.message?.includes('Cannot read properties of null')) {
+                toast.error(error.response?.data?.message || 'Failed to submit test');
+            }
             throw error;
         }
     },

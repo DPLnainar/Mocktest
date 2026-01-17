@@ -12,15 +12,17 @@ import lombok.*;
 @AllArgsConstructor
 public class TestQuestion {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private TestQuestionId id;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("testId")
     @JoinColumn(name = "test_id", nullable = false)
     private Test test;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("questionId")
     @JoinColumn(name = "question_id", nullable = false)
     private Question question;
 
@@ -28,7 +30,7 @@ public class TestQuestion {
     private Integer marks;
 
     @Column(length = 255)
-    private String sectionName; // e.g., "Part-I", "Section-A"
+    private String sectionName;
 
-    private Integer orderIndex; // To maintain sequence within the test
+    private Integer orderIndex;
 }

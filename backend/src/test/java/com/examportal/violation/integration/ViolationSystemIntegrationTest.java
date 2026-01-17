@@ -84,7 +84,7 @@ class ViolationSystemIntegrationTest {
         @Test
         void testRecordSingleViolation() {
                 // When: Record a violation
-                int strikeCount = violationService.recordViolation(
+                ViolationService.ViolationRecordResult result = violationService.recordViolation(
                                 testSessionId,
                                 testStudentId,
                                 testExamId,
@@ -92,6 +92,8 @@ class ViolationSystemIntegrationTest {
                                 Violation.Severity.MAJOR,
                                 "Switched to Google",
                                 Map.of("targetUrl", "google.com"));
+
+                int strikeCount = result.strikeCount();
 
                 // Then: Verify strike count
                 assertThat(strikeCount).isEqualTo(2); // MAJOR = 2 strikes
@@ -169,12 +171,14 @@ class ViolationSystemIntegrationTest {
                                 Map.of());
 
                 // Strike 5 (should trigger termination)
-                int finalCount = violationService.recordViolation(
+                ViolationService.ViolationRecordResult result = violationService.recordViolation(
                                 testSessionId, testStudentId, testExamId,
                                 Violation.ViolationType.NO_FACE_DETECTED,
                                 Violation.Severity.MINOR, // 1 strike
                                 "Third violation",
                                 Map.of());
+
+                int finalCount = result.strikeCount();
 
                 // Then: Session should be terminated
                 assertThat(finalCount).isEqualTo(5);
@@ -189,7 +193,7 @@ class ViolationSystemIntegrationTest {
         @Test
         void testCriticalViolationImmediateTermination() {
                 // When: Record a CRITICAL violation
-                int strikeCount = violationService.recordViolation(
+                ViolationService.ViolationRecordResult result = violationService.recordViolation(
                                 testSessionId,
                                 testStudentId,
                                 testExamId,
@@ -197,6 +201,8 @@ class ViolationSystemIntegrationTest {
                                 Violation.Severity.CRITICAL, // 5 strikes = immediate termination
                                 "AI IDE detected",
                                 Map.of("detectedTool", "GitHub Copilot"));
+
+                int strikeCount = result.strikeCount();
 
                 // Then: Should be terminated immediately
                 assertThat(strikeCount).isEqualTo(5);
@@ -320,28 +326,48 @@ class ViolationSystemIntegrationTest {
         @Test
         void testResetStrikeCount() {
                 // Given: Session with violations
-                violationService.recordViolation(
-                                testSessionId, testStudentId, testExamId,
+                // Act
+                ViolationService.ViolationRecordResult result = violationService.recordViolation(
+                                testSessionId,
+                                testStudentId,
+                                testExamId,
                                 Violation.ViolationType.TAB_SWITCH,
                                 Violation.Severity.MAJOR,
-                                "Tab switch",
-                                Map.of());
+                                "Tab switch detected",
+                                null);
 
-                violationService.recordViolation(
-                                testSessionId, testStudentId, testExamId,
-                                Violation.ViolationType.PHONE_DETECTED,
-                                Violation.Severity.MAJOR,
-                                "Phone detected",
-                                Map.of());
+                // Assert
+                assertThat(result.strikeCount()).isEqualTo(2); // Major violation = 2 strikes
+        }
 
-                int beforeReset = violationService.getStrikeCount(testSessionId);
-                assertThat(beforeReset).isEqualTo(4);
+        @Test
+        void testGetViolationStats() {
+                // Arrange
+                // Add some violations
+                violationService.recordViolation(testSessionId, testStudentId, testExamId,
+                                Violation.ViolationType.TAB_SWITCH, Violation.Severity.MAJOR, "V1", null);
+                violationService.recordViolation(testSessionId, testStudentId, testExamId,
+                                Violation.ViolationType.NO_FACE_DETECTED, Violation.Severity.MINOR, "V2", null);
 
-                // When: Admin resets strike count
-                violationService.resetStrikeCount(testSessionId, "Appeal granted - technical issue");
+                // Act
+                ViolationService.ViolationStats stats = violationService.getViolationStats(testSessionId);
 
-                // Then: Counter should be reset
-                int afterReset = violationService.getStrikeCount(testSessionId);
-                assertThat(afterReset).isEqualTo(0);
+                // Assert
+                assertThat(stats.totalViolations()).isEqualTo(2);
+                assertThat(stats.cameraViolations()).isEqualTo(1); // NO_FACE_DETECTED is a camera violation
+                assertThat(stats.tabSwitchCount()).isEqualTo(1);
+        }
+
+        @Test
+        void testResetStrikeCountAfterViolations() { // Renamed to avoid conflict
+                // Arrange
+                violationService.recordViolation(testSessionId, testStudentId, testExamId,
+                                Violation.ViolationType.TAB_SWITCH, Violation.Severity.MAJOR, "V1", null);
+
+                // Act
+                violationService.resetStrikeCount(testSessionId, "Appeal accepted");
+
+                // Assert
+                assertThat(violationService.getStrikeCount(testSessionId)).isEqualTo(0);
         }
 }

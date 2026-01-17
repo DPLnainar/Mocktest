@@ -1,5 +1,6 @@
 package com.examportal.controller;
 
+import com.examportal.dto.BulkQuestionRequest;
 import com.examportal.dto.BulkUploadResult;
 import com.examportal.dto.QuestionDTO;
 import com.examportal.entity.QuestionType;
@@ -59,6 +60,52 @@ public class QuestionController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/bulk-create")
+    public ResponseEntity<BulkUploadResult> bulkCreate(@RequestBody BulkQuestionRequest request) {
+        BulkUploadResult result = BulkUploadResult.builder().build();
+        try {
+            java.util.List<com.fasterxml.jackson.databind.JsonNode> jsonQuestions = request.getQuestions();
+            if (jsonQuestions == null || jsonQuestions.isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            java.util.List<QuestionDTO> dtos = new java.util.ArrayList<>();
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+            int index = 1;
+            for (com.fasterxml.jackson.databind.JsonNode node : jsonQuestions) {
+                try {
+                    QuestionDTO dto = mapper.treeToValue(node, QuestionDTO.class);
+                    dtos.add(dto);
+                } catch (Exception e) {
+                    result.setErrorCount(result.getErrorCount() + 1);
+                    result.addError(index, "Invalid JSON Format: " + e.getMessage());
+                }
+                index++; // Keep track of original row index
+            }
+
+            if (!dtos.isEmpty()) {
+                // Determine starting index offsets or just accept that service indices might
+                // be relative to valid items
+                // For simplicity, we just merge.
+                BulkUploadResult serviceResult = questionService.bulkCreateQuestions(dtos);
+
+                result.setSuccessCount(serviceResult.getSuccessCount());
+                result.setErrorCount(result.getErrorCount() + serviceResult.getErrorCount());
+                result.getQuestionIds().addAll(serviceResult.getQuestionIds());
+
+                // Add Service errors
+                result.getErrors().addAll(serviceResult.getErrors());
+            }
+
+            return ResponseEntity.ok(result);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @PostMapping("/paste-upload")
     public ResponseEntity<BulkUploadResult> pasteUpload(@RequestBody Map<String, String> payload) {
         String text = payload.get("text");
@@ -69,7 +116,10 @@ public class QuestionController {
         return ResponseEntity.ok(result);
     }
 
+    // Debug method removed for stability check
+
     @PostMapping("/{id}/clone")
+
     public ResponseEntity<QuestionDTO> cloneQuestion(@PathVariable Long id) {
         QuestionDTO cloned = questionService.cloneQuestion(id);
         return ResponseEntity.status(HttpStatus.CREATED).body(cloned);

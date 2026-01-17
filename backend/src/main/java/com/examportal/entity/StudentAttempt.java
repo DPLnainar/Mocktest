@@ -49,6 +49,10 @@ public class StudentAttempt {
     @Builder.Default
     private Boolean autoSubmitted = false;
 
+    // Freeze tracking (Phase 3: Enhanced Anti-cheat)
+    private String freezeReason;
+    private LocalDateTime frozenAt;
+
     // JSON map: questionId -> student's answer (MCQ option or code)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")

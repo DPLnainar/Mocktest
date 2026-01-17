@@ -1,12 +1,16 @@
 package com.examportal.dto;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.util.List;
 import java.util.Map;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CodingQuestionDTO extends QuestionDTO {
 
     private List<Integer> allowedLanguageIds;

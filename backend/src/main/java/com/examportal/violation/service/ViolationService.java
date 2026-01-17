@@ -1,9 +1,14 @@
 package com.examportal.violation.service;
 
+import com.examportal.entity.StudentAttempt;
+import com.examportal.entity.AttemptStatus;
 import com.examportal.monitoring.model.StudentStatus;
+import com.examportal.repository.StudentAttemptRepository;
 import com.examportal.violation.entity.Violation;
 import com.examportal.violation.repository.ViolationRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -14,8 +19,13 @@ import java.util.stream.Collectors;
 @Service
 public class ViolationService {
 
+    private static final Logger log = LoggerFactory.getLogger(ViolationService.class);
+
     @Autowired
     private ViolationRepository violationRepository;
+
+    @Autowired
+    private StudentAttemptRepository attemptRepository;
 
     public Violation logViolation(Violation violation) {
         violation.setTimestamp(LocalDateTime.now());
@@ -44,7 +54,7 @@ public class ViolationService {
     }
 
     @SuppressWarnings("unchecked")
-    public int recordViolation(Long sessionId, Long studentId, Long examId,
+    public ViolationRecordResult recordViolation(Long sessionId, Long studentId, Long examId,
             Violation.ViolationType type, Violation.Severity severity,
             String message, Object evidence) {
         Violation violation = Violation.builder()
@@ -63,7 +73,75 @@ public class ViolationService {
                 .build();
 
         violationRepository.save(java.util.Objects.requireNonNull(violation));
-        return getStrikeCount(sessionId);
+
+        // Check if test should be frozen
+        checkAndFreezeAttempt(sessionId, type);
+
+        // Check actual status
+        boolean isFrozen = false;
+        try {
+            StudentAttempt attempt = attemptRepository.findById(sessionId).orElse(null);
+            if (attempt != null && attempt.getStatus() == AttemptStatus.FROZEN) {
+                isFrozen = true;
+            }
+        } catch (Exception e) {
+            log.error("Failed to check status", e);
+        }
+
+        return new ViolationRecordResult(getStrikeCount(sessionId), isFrozen);
+    }
+
+    public record ViolationRecordResult(int strikeCount, boolean isFrozen) {
+    }
+
+    /**
+     * Check if attempt should be frozen based on violation type or threshold
+     */
+    private void checkAndFreezeAttempt(Long sessionId, Violation.ViolationType type) {
+        // Check for immediate freeze violations
+        if (shouldFreezeImmediately(type)) {
+            freezeAttempt(sessionId, "Critical violation detected: " + type);
+            return;
+        }
+
+        // Check threshold-based freeze
+        int totalViolations = getStrikeCount(sessionId);
+        if (totalViolations >= 5) {
+            freezeAttempt(sessionId, "Too many violations (" + totalViolations + " strikes)");
+        }
+    }
+
+    /**
+     * Determine if violation type should trigger immediate freeze
+     */
+    private boolean shouldFreezeImmediately(Violation.ViolationType type) {
+        return type == Violation.ViolationType.FULLSCREEN_EXIT ||
+                type == Violation.ViolationType.CAMERA_DETECTED ||
+                type == Violation.ViolationType.SCREENSHOT_ATTEMPT;
+    }
+
+    /**
+     * Freeze the test attempt
+     */
+    private void freezeAttempt(Long sessionId, String reason) {
+        try {
+            StudentAttempt attempt = attemptRepository.findById(sessionId)
+                    .orElseThrow(() -> new RuntimeException("Attempt not found: " + sessionId));
+
+            // Only freeze if not already frozen or submitted
+            if (attempt.getStatus() != AttemptStatus.FROZEN &&
+                    attempt.getStatus() != AttemptStatus.SUBMITTED) {
+
+                attempt.setStatus(AttemptStatus.FROZEN);
+                attempt.setFreezeReason(reason);
+                attempt.setFrozenAt(LocalDateTime.now());
+                attemptRepository.save(attempt);
+
+                log.warn("Test frozen - Session: {}, Reason: {}", sessionId, reason);
+            }
+        } catch (Exception e) {
+            log.error("Failed to freeze attempt {}: {}", sessionId, e.getMessage());
+        }
     }
 
     public ViolationStats getViolationStats(Long sessionId) {

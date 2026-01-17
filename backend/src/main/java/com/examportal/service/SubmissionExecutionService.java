@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Submission Execution Service
@@ -41,9 +40,13 @@ public class SubmissionExecutionService {
      * @param studentId   ID of the student (for rate limiting)
      * @return ExecutionResult containing status and output/error
      */
-    public ExecutionResult executeSubmission(String code, Integer languageId, Map<String, Boolean> constraints,
-            Long studentId) {
-        String executionId = UUID.randomUUID().toString();
+    /**
+     * Execute a student's submission through the secure pipeline.
+     */
+    public ExecutionResult executeSubmission(String executionId, String code, Integer languageId,
+            Map<String, Boolean> constraints,
+            Long studentId, Long attemptId, Long questionId) {
+        // String executionId = UUID.randomUUID().toString(); // Use provided ID
         log.info("Starting secure execution pipeline for Submission {}", executionId);
 
         try {
@@ -84,13 +87,16 @@ public class SubmissionExecutionService {
             try {
                 // Call Judge0 with CRASH-PROOF limits
                 return judge0Service.executeCode(
+                        executionId,
                         code,
                         languageId,
                         "", // stdin (empty for now, could be passed if needed)
                         studentId,
                         CPU_TIME_LIMIT,
                         WALL_TIME_LIMIT,
-                        MEMORY_LIMIT);
+                        MEMORY_LIMIT,
+                        attemptId,
+                        questionId);
             } catch (Exception e) {
                 log.error("Phase 2 Error: Judge0 Execution failed", e);
                 // Graceful error handling - avoid crashing controller

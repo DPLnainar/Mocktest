@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Badge, Form, Modal } from 'react-bootstrap';
 import { Upload, ChevronLeft, Plus, Save, Trash2, Eye, Pencil, CheckCircle, Clipboard, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import QuestionForm from './QuestionForm';
-import { testAPI } from "../services/testAPI";
+import { testAPI, questionAPI } from "../services/testAPI";
 import BulkUploadComponent from './BulkUploadComponent'; // New unified upload component
 
 const TestBuilder = () => {
     const navigate = useNavigate();
+    const { testId } = useParams();
+    const isEditingMode = !!testId;
 
     // 1. Test Configuration State
     const [testDetails, setTestDetails] = useState({
@@ -29,10 +31,55 @@ const TestBuilder = () => {
     const [uploadMode, setUploadMode] = useState('file'); // 'file' or 'paste'
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [showQuestionModal, setShowQuestionModal] = useState(false);
+    const [isLoadingData, setIsLoadingData] = useState(false);
+
     // Modal State for Question Details (View/Edit)
     const [selectedQuestion, setSelectedQuestion] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [showQuestionModal, setShowQuestionModal] = useState(false);
+
+    // --- FETCH TEST DATA FOR EDITING ---
+    useEffect(() => {
+        if (isEditingMode) {
+            const fetchTestDetails = async () => {
+                setIsLoadingData(true);
+                try {
+                    const response = await testAPI.getTestById(testId);
+                    const data = response.data;
+
+                    setTestDetails({
+                        title: data.title || '',
+                        description: data.description || '',
+                        durationMinutes: data.durationMinutes || 60,
+                        startDateTime: data.startDateTime ? data.startDateTime.substring(0, 16) : '',
+                        endDateTime: data.endDateTime ? data.endDateTime.substring(0, 16) : '',
+                        type: data.type || 'MCQ_ONLY',
+                        instructions: data.instructions || '',
+                        status: data.status || 'PUBLISHED'
+                    });
+
+                    if (data.testQuestions) {
+                        const loadedQuestions = data.testQuestions.map((tq, idx) => ({
+                            ...(tq.question || {}),
+                            id: tq.questionId,  // Add this so we know it's an existing question
+                            questionId: tq.questionId,
+                            tempId: Date.now() + Math.random() + idx,
+                            type: tq.question?.type || 'MCQ',
+                            marks: tq.marks || tq.question?.marks || 1,
+                        }));
+                        setQuestions(loadedQuestions);
+                    }
+                } catch (error) {
+                    console.error("Error fetching test details:", error);
+                    toast.error("Failed to load test details");
+                    navigate('/moderator/tests');
+                } finally {
+                    setIsLoadingData(false);
+                }
+            };
+            fetchTestDetails();
+        }
+    }, [testId, isEditingMode, navigate]);
 
     // --- BULK IMPORT HANDLER ---
     const handleBulkUploadSuccess = (result) => {
@@ -42,17 +89,38 @@ const TestBuilder = () => {
         }
 
         // Create question objects from uploaded IDs
-        const newQuestions = result.questionIds.map((id, idx) => ({
-            questionId: id,
-            tempId: Date.now() + Math.random() + idx,
-            type: 'UPLOADED', // Mark as uploaded from backend
-            marks: 1,
-            questionText: `Question ${id}` // Placeholder - will be loaded from backend
-        }));
+        // Create question objects from uploaded IDs by merging with parsed data
+        const newQuestions = result.questionIds.map((id, idx) => {
+            const parsedData = result.parsedQuestions && result.parsedQuestions[idx] ? result.parsedQuestions[idx] : {};
+            return {
+                ...parsedData, // Spread all parsed fields (questionText, marks, options, etc.)
+                questionId: id,
+                tempId: Date.now() + Math.random() + idx,
+                type: parsedData.type || 'UPLOADED',
+                marks: parsedData.marks || 1,
+                questionText: parsedData.questionText || `Question ${id}`, // Fallback only if text is missing
+                // Ensure coding specific fields are preserved if present
+                testCases: parsedData.testCases || [],
+                allowedLanguages: parsedData.allowedLanguageIds || [62, 71, 54, 63],
+                starterCode: parsedData.starterCode || "",
+                constraints: parsedData.constraints || { banLoops: false, requireRecursion: false }
+            };
+        });
 
-        setQuestions(prev => [...prev, ...newQuestions]);
+        setQuestions(prev => {
+            // Deduplicate: Compare new questions against existing ones by text content
+            const existingTexts = new Set(prev.map(q => q.questionText?.trim()));
+            const uniqueNewQuestions = newQuestions.filter(nq => !existingTexts.has(nq.questionText?.trim()));
+
+            if (uniqueNewQuestions.length < newQuestions.length) {
+                // Silently skip duplicates as requested by user
+                console.log(`Skipped ${newQuestions.length - uniqueNewQuestions.length} duplicate questions.`);
+            }
+
+            return [...prev, ...uniqueNewQuestions];
+        });
         setShowImportModal(false);
-        toast.success(`Successfully uploaded ${result.saved} questions!`);
+        // Toast handled by BulkUploadComponent, so removed here to avoid duplicates
 
         if (result.failed > 0) {
             toast.error(`${result.failed} questions failed to upload. Check the error report.`);
@@ -80,10 +148,21 @@ const TestBuilder = () => {
 
     const handleSaveQuestion = (updatedQuestion) => {
         if (selectedQuestion.tempId) {
-            setQuestions(questions.map(q => q.tempId === selectedQuestion.tempId ? { ...updatedQuestion, tempId: selectedQuestion.tempId } : q));
-            toast.success("Question updated");
+            // "Copy-on-Write": Validation strategy
+            // If we edit a question, we remove its ID to treat it as a "new candidate".
+            // - If the text is unchanged, backend dedupe will return the old ID (Reuse).
+            // - If text changed, backend creates a NEW question (Fork/Copy).
+            // This prevents edits in Test A from breaking Test B, while allowing reuse.
+            const dirtyQuestion = {
+                ...updatedQuestion,
+                id: null, // <--- Key change: Force re-verification/creation
+                tempId: selectedQuestion.tempId
+            };
+
+            setQuestions(questions.map(q => q.tempId === selectedQuestion.tempId ? dirtyQuestion : q));
+            toast.success("Question updated (will be saved as custom version)");
         } else {
-            const newQ = { ...updatedQuestion, tempId: Date.now() + Math.random() };
+            const newQ = { ...updatedQuestion, tempId: Date.now() + Math.random(), id: null };
             setQuestions([...questions, newQ]);
             toast.success("Question added");
         }
@@ -112,25 +191,102 @@ const TestBuilder = () => {
         const loadingToast = toast.loading("Creating test...");
 
         try {
-            const payload = {
-                ...testDetails,
-                testQuestions: questions.map((q, index) => ({
-                    question: {
+            // 1. Identify unsaved questions
+            const unsavedQuestions = questions.filter(q => !q.id);
+            const savedQuestionsMap = new Map(); // tempId -> savedQuestion
+
+            if (unsavedQuestions.length > 0) {
+                const loadingSave = toast.loading(`Saving ${unsavedQuestions.length} new questions...`);
+                try {
+                    // Prepare questions for bulk create
+                    const questionsToCreate = unsavedQuestions.map(q => ({
                         ...q,
-                        marks: q.marks || 1,
                         languageId: q.languageId || (q.type === 'CODING' ? 62 : null)
-                    },
-                    questionOrder: index + 1
+                    }));
+
+                    const { data: bulkResult } = await questionAPI.bulkCreate(questionsToCreate);
+
+                    if (bulkResult.errorCount > 0 && bulkResult.successCount === 0) {
+                        throw new Error(`Failed to save questions: ${bulkResult.errors[0]}`);
+                    }
+
+                    unsavedQuestions.forEach((q, index) => {
+                        if (bulkResult.questionIds[index]) {
+                            savedQuestionsMap.set(q.tempId, { ...q, id: bulkResult.questionIds[index] });
+                        }
+                    });
+
+                    toast.success(`Saved ${bulkResult.successCount} questions!`);
+                    toast.dismiss(loadingSave);
+
+                } catch (err) {
+                    console.error("Bulk save failed:", err);
+                    toast.error("Failed to save new questions. Please try again.");
+                    toast.dismiss(loadingSave);
+                    setIsSubmitting(false);
+                    toast.dismiss(loadingToast);
+                    return;
+                }
+            }
+
+            // 2. Merge saved questions back into the main list to get a fully persisted list
+            const finalQuestions = questions.map(q => {
+                if (q.id) return q;
+                return savedQuestionsMap.get(q.tempId) || q;
+            });
+
+            // Verify all have IDs now
+            const invalidQuestions = finalQuestions.filter(q => !q.id);
+            if (invalidQuestions.length > 0) {
+                toast.error(`Error: ${invalidQuestions.length} questions could not be saved.`);
+                setIsSubmitting(false);
+                toast.dismiss(loadingToast);
+                return;
+            }
+
+            // Optional: Update local state
+            setQuestions(finalQuestions);
+
+            // 3. Format dates and create payload
+            const formatDateTime = (dt) => dt && dt.length === 16 ? `${dt}:00` : dt;
+
+            const payload = {
+                id: isEditingMode ? parseInt(testId) : null,
+                title: testDetails.title,
+                description: testDetails.description,
+                instructions: testDetails.instructions,
+                durationMinutes: parseInt(testDetails.durationMinutes) || 60,
+                type: testDetails.type,
+                status: testDetails.status || 'PUBLISHED',
+                testType: testDetails.testType || 'Placement Drive',
+                startDateTime: formatDateTime(testDetails.startDateTime),
+                endDateTime: formatDateTime(testDetails.endDateTime),
+                testQuestions: finalQuestions.map((q, index) => ({
+                    questionId: q.id,
+                    marks: q.marks || 1,
+                    orderIndex: index + 1,
+                    sectionName: "General"
                 }))
             };
-            await testAPI.createTest(payload);
+
+            console.log("Finalizing test with payload:", JSON.stringify(payload, null, 2));
+
+            if (isEditingMode) {
+                await testAPI.updateTest(testId, payload);
+                toast.success("Test updated successfully!");
+            } else {
+                await testAPI.createTest(payload);
+                toast.success("Test created successfully!");
+            }
+
             toast.dismiss(loadingToast);
-            toast.success("Test created successfully!");
-            navigate('/moderator/tests');
+            setTimeout(() => navigate('/moderator/tests'), 1000);
         } catch (error) {
-            console.error("Failed to create test:", error);
+            console.error("Failed to save test:", error);
+            console.log("Error response data:", error.response?.data);
             toast.dismiss(loadingToast);
-            toast.error(error.response?.data?.message || "Failed to upload test");
+            const errorMsg = error.response?.data?.message || error.response?.data?.error || "Failed to save test";
+            toast.error(errorMsg);
         } finally {
             setIsSubmitting(false);
         }
@@ -145,7 +301,7 @@ const TestBuilder = () => {
                     <Button variant="link" className="p-0 me-3 text-white" onClick={() => navigate('/moderator/tests')}>
                         <ChevronLeft size={24} />
                     </Button>
-                    <h4 className="mb-0 text-white fw-bold">Create New Test</h4>
+                    <h4 className="mb-0 text-white fw-bold">{isEditingMode ? 'Edit Test' : 'Create New Test'}</h4>
                 </div>
 
                 {/* 1. Test Configuration Card */}
@@ -156,31 +312,62 @@ const TestBuilder = () => {
                             <Col md={12}>
                                 <Form.Group>
                                     <Form.Label className="text-gray-300">Test Title *</Form.Label>
-                                    <Form.Control type="text" className="bg-gray-700 text-white border-gray-600" placeholder="e.g. Java Mid-Term Exam" value={testDetails.title} onChange={e => setTestDetails({ ...testDetails, title: e.target.value })} />
+                                    <Form.Control
+                                        type="text"
+                                        className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
+                                        placeholder="e.g. Java Mid-Term Exam"
+                                        value={testDetails.title}
+                                        onChange={e => setTestDetails({ ...testDetails, title: e.target.value })}
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label className="text-gray-300">Start Time *</Form.Label>
-                                    <Form.Control type="datetime-local" className="bg-gray-700 text-white border-gray-600" value={testDetails.startDateTime} onChange={e => setTestDetails({ ...testDetails, startDateTime: e.target.value })} />
+                                    <Form.Control
+                                        type="datetime-local"
+                                        className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
+                                        value={testDetails.startDateTime}
+                                        onChange={e => setTestDetails({ ...testDetails, startDateTime: e.target.value })}
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label className="text-gray-300">End Time *</Form.Label>
-                                    <Form.Control type="datetime-local" className="bg-gray-700 text-white border-gray-600" value={testDetails.endDateTime} onChange={e => setTestDetails({ ...testDetails, endDateTime: e.target.value })} />
+                                    <Form.Control
+                                        type="datetime-local"
+                                        className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
+                                        value={testDetails.endDateTime}
+                                        onChange={e => setTestDetails({ ...testDetails, endDateTime: e.target.value })}
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label className="text-gray-300">Duration (mins)</Form.Label>
-                                    <Form.Control type="number" className="bg-gray-700 text-white border-gray-600" value={testDetails.durationMinutes} onChange={e => setTestDetails({ ...testDetails, durationMinutes: parseInt(e.target.value) })} />
+                                    <Form.Control
+                                        type="number"
+                                        className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
+                                        value={testDetails.durationMinutes}
+                                        onChange={e => {
+                                            const val = parseInt(e.target.value);
+                                            setTestDetails({
+                                                ...testDetails,
+                                                durationMinutes: isNaN(val) ? '' : val
+                                            });
+                                        }}
+                                    />
                                 </Form.Group>
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
                                     <Form.Label className="text-gray-300">Test Type</Form.Label>
-                                    <Form.Select className="bg-gray-700 text-white border-gray-600" value={testDetails.type} onChange={e => setTestDetails({ ...testDetails, type: e.target.value })}>
+                                    <Form.Select
+                                        className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500"
+                                        value={testDetails.type}
+                                        onChange={e => setTestDetails({ ...testDetails, type: e.target.value })}
+                                    >
                                         <option value="MCQ_ONLY">MCQ Only</option>
                                         <option value="CODING_ONLY">Coding Only</option>
                                         <option value="HYBRID">Hybrid</option>
@@ -252,8 +439,12 @@ const TestBuilder = () => {
 
                 {/* Finalize Button */}
                 <div className="d-grid gap-2 mb-5">
-                    <Button variant="success" size="lg" onClick={finalizeTest} disabled={questions.length === 0 || isSubmitting} className="fw-bold py-3">
-                        {isSubmitting ? (<><span className="spinner-border spinner-border-sm me-2" /> Creating Test...</>) : (<><Save size={20} className="me-2" /> Finalize & Publish Test</>)}
+                    <Button variant="success" size="lg" onClick={finalizeTest} disabled={questions.length === 0 || isSubmitting || isLoadingData} className="fw-bold py-3">
+                        {isSubmitting ? (
+                            <><span className="spinner-border spinner-border-sm me-2" /> {isEditingMode ? 'Updating...' : 'Creating...'}</>
+                        ) : (
+                            <><Save size={20} className="me-2" /> {isEditingMode ? 'Save & Update Test' : 'Finalize & Create Test'}</>
+                        )}
                     </Button>
                 </div>
 

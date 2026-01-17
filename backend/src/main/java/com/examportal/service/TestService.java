@@ -1,16 +1,18 @@
 package com.examportal.service;
 
 import com.examportal.dto.BulkUploadResult;
+import com.examportal.dto.CodingQuestionDTO;
+import com.examportal.dto.MCQQuestionDTO;
+import com.examportal.dto.QuestionDTO;
 import com.examportal.dto.TestDTO;
 import com.examportal.dto.TestQuestionDTO;
-import com.examportal.entity.Question;
-import com.examportal.entity.Test;
-import com.examportal.entity.TestStatus;
-import com.examportal.entity.TestType;
+import com.examportal.entity.*;
 import com.examportal.repository.QuestionRepository;
 import com.examportal.repository.TestRepository;
 import com.examportal.security.DepartmentSecurityService;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,162 +20,89 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
-
 @Slf4j
 public class TestService {
 
     private final TestRepository testRepository;
     private final QuestionRepository questionRepository;
     private final DepartmentSecurityService departmentSecurityService;
-    private final QuestionService questionService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public TestService(TestRepository testRepository,
             QuestionRepository questionRepository,
-            DepartmentSecurityService departmentSecurityService,
-            QuestionService questionService) {
+            DepartmentSecurityService departmentSecurityService) {
         this.testRepository = testRepository;
         this.questionRepository = questionRepository;
         this.departmentSecurityService = departmentSecurityService;
-        this.questionService = questionService;
-    }
-
-    /**
-     * Upload a file (CSV/Excel/Word/PDF) containing questions and attach them to
-     * the test.
-     * Returns the BulkUploadResult from QuestionService and also links the created
-     * questions
-     * to the specified test with default marks and section.
-     */
-    @Transactional
-    public BulkUploadResult uploadQuestionsToTest(Long testId, MultipartFile file) {
-        // 1️⃣ Parse and persist questions via QuestionService
-        BulkUploadResult uploadResult = questionService.bulkUpload(file);
-
-        // 2️⃣ Load the test (ensuring department access)
-        Test test = testRepository.findById(java.util.Objects.requireNonNull(testId))
-                .orElseThrow(() -> new RuntimeException("Test not found: " + testId));
-        departmentSecurityService.verifyDepartmentAccess(test.getDepartment());
-
-        // 3️⃣ Attach each newly created question to the test
-        int order = test.getTestQuestions() != null ? test.getTestQuestions().size() : 0;
-        for (Long qId : uploadResult.getQuestionIds()) {
-            Question question = questionRepository.findById(java.util.Objects.requireNonNull(qId))
-                    .orElseThrow(() -> new RuntimeException("Question not found after upload: " + qId));
-            // Use default marks = question.marks (or 1) and generic section "Imported"
-            test.addQuestion(question,
-                    question.getMarks() != null ? question.getMarks() : 1,
-                    "Imported",
-                    order++);
-        }
-        testRepository.save(test);
-        return uploadResult;
     }
 
     @Transactional
     public TestDTO createTest(TestDTO dto) {
-        String department = departmentSecurityService.getCurrentUserDepartment();
-        Long userId = departmentSecurityService.getCurrentUserId();
+        departmentSecurityService.verifyDepartmentAccess(dto.getDepartment());
 
-        // Validate time constraints
-        if (dto.getEndDateTime().isBefore(dto.getStartDateTime())) {
-            throw new IllegalArgumentException("End time must be after start time");
-        }
+        Test test = new Test();
+        test.setTitle(dto.getTitle());
+        test.setDescription(dto.getDescription());
+        test.setDepartment(dto.getDepartment());
+        test.setStartDateTime(dto.getStartDateTime());
+        test.setEndDateTime(dto.getEndDateTime());
+        test.setDurationMinutes(dto.getDurationMinutes());
+        test.setType(TestType.valueOf(dto.getType()));
+        test.setInstructions(dto.getInstructions());
+        test.setStatus(TestStatus.PUBLISHED);
+        test.setTestType(dto.getTestType());
 
-        Test test = Test.builder()
-                .title(dto.getTitle())
-                .description(dto.getDescription())
-                .department(department)
-                .startDateTime(dto.getStartDateTime())
-                .endDateTime(dto.getEndDateTime())
-                .durationMinutes(dto.getDurationMinutes())
-                .type(TestType.valueOf(dto.getType()))
-                .status(dto.getStatus() != null ? TestStatus.valueOf(dto.getStatus()) : TestStatus.DRAFT)
-                .testType(dto.getTestType())
-                .instructions(dto.getInstructions())
-                .createdBy(userId)
-                .build();
+        test = testRepository.save(test);
 
-        // Add questions if provided
-        if (dto.getTestQuestions() != null && !dto.getTestQuestions().isEmpty()) {
+        if (dto.getTestQuestions() != null) {
             for (int i = 0; i < dto.getTestQuestions().size(); i++) {
                 var tqDto = dto.getTestQuestions().get(i);
-                Question question = questionRepository.findById(java.util.Objects.requireNonNull(tqDto.getQuestionId()))
+                Question question = questionRepository.findById(Objects.requireNonNull(tqDto.getQuestionId()))
                         .orElseThrow(() -> new RuntimeException("Question not found: " + tqDto.getQuestionId()));
 
                 test.addQuestion(
                         question,
                         tqDto.getMarks() != null ? tqDto.getMarks() : question.getMarks(),
                         tqDto.getSectionName() != null ? tqDto.getSectionName() : "General",
-                        tqDto.getOrderIndex() != null ? tqDto.getOrderIndex() : i);
+                        tqDto.getOrderIndex() != null ? tqDto.getOrderIndex() : (i + 1));
             }
+            test = testRepository.save(test);
         }
 
-        test = testRepository.save(java.util.Objects.requireNonNull(test));
         return mapToDTO(test);
     }
 
     public List<TestDTO> getTestsForModerator() {
-        String department = departmentSecurityService.getCurrentUserDepartment();
-        List<Test> tests = testRepository.findByDepartment(department);
-        return tests.stream().map(this::mapToDTO).toList();
-    }
-
-    public List<TestDTO> getAvailableTestsForStudent() {
-        String department = departmentSecurityService.getCurrentUserDepartment();
-        LocalDateTime now = LocalDateTime.now();
-
-        // Find tests that haven't ended yet for User's Dept, MODERATOR, or General
-        List<String> departments = Arrays.asList(department, "MODERATOR", "General");
-
-        List<Test> tests = testRepository.findByDepartmentInAndEndDateTimeAfterOrderByStartDateTimeAsc(
-                departments, now);
-
-        // Filter strictly for PUBLISHED tests
-        return tests.stream()
-                .filter(test -> test.getStatus() == TestStatus.PUBLISHED)
-                .map(this::mapToDTO)
-                .toList();
+        if (departmentSecurityService.isCurrentUserAdmin()) {
+            return testRepository.findAll().stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.toList());
+        } else {
+            String department = departmentSecurityService.getCurrentUserDepartment();
+            return testRepository.findByDepartment(department).stream()
+                    .map(this::mapToDTO)
+                    .collect(Collectors.toList());
+        }
     }
 
     public TestDTO getTestById(Long id) {
-        Test test = testRepository.findById(java.util.Objects.requireNonNull(id))
+        Test test = testRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Test not found"));
-        // Verify department access
-        String department = test.getDepartment();
-        if (!department.equals("MODERATOR") && !department.equals("General")) {
-            departmentSecurityService.verifyDepartmentAccess(department);
-        }
         return mapToDTO(test);
-    }
-
-    public boolean isTestActive(Long testId) {
-        Test test = testRepository.findById(java.util.Objects.requireNonNull(testId))
-                .orElseThrow(() -> new RuntimeException("Test not found"));
-        LocalDateTime now = LocalDateTime.now();
-        return !now.isBefore(test.getStartDateTime()) && !now.isAfter(test.getEndDateTime());
-    }
-
-    public boolean isTestUpcoming(Long testId) {
-        Test test = testRepository.findById(java.util.Objects.requireNonNull(testId))
-                .orElseThrow(() -> new RuntimeException("Test not found"));
-        return LocalDateTime.now().isBefore(test.getStartDateTime());
-    }
-
-    public boolean isTestExpired(Long testId) {
-        Test test = testRepository.findById(java.util.Objects.requireNonNull(testId))
-                .orElseThrow(() -> new RuntimeException("Test not found"));
-        return LocalDateTime.now().isAfter(test.getEndDateTime());
     }
 
     @Transactional
     public TestDTO updateTest(Long id, TestDTO dto) {
-        Test test = testRepository.findById(java.util.Objects.requireNonNull(id))
+        Test test = testRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new RuntimeException("Test not found"));
-        // Verify department access
+
         departmentSecurityService.verifyDepartmentAccess(test.getDepartment());
 
         test.setTitle(dto.getTitle());
@@ -190,29 +119,64 @@ public class TestService {
         test.setInstructions(dto.getInstructions());
 
         if (dto.getTestQuestions() != null) {
+            log.info("DETACH STRATEGY: Updating questions for test {}. New count: {}", id,
+                    dto.getTestQuestions().size());
+
+            // 1. Clear the collection
             test.getTestQuestions().clear();
+            testRepository.saveAndFlush(test);
+
+            // 2. DETACH the entity completely
+            entityManager.detach(test);
+
+            // 3. Native DELETE and flush
+            entityManager.createNativeQuery("DELETE FROM test_questions WHERE test_id = :tid")
+                    .setParameter("tid", id)
+                    .executeUpdate();
+            entityManager.flush();
+
+            // 4. Clear entire persistence context
+            entityManager.clear();
+
+            // 5. Reload test with fresh context
+            test = testRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Test not found after reload"));
+
+            // 6. Add new questions
+            java.util.Set<Long> seenIds = new java.util.HashSet<>();
             for (int i = 0; i < dto.getTestQuestions().size(); i++) {
                 var tqDto = dto.getTestQuestions().get(i);
-                Question question = questionRepository.findById(java.util.Objects.requireNonNull(tqDto.getQuestionId()))
-                        .orElseThrow(() -> new RuntimeException("Question not found: " + tqDto.getQuestionId()));
+                Long qId = tqDto.getQuestionId();
+                if (qId == null || seenIds.contains(qId))
+                    continue;
+                seenIds.add(qId);
 
+                Question question = questionRepository.findById(qId)
+                        .orElseThrow(() -> new RuntimeException("Question not found with ID: " + qId));
+
+                log.info("Adding link: Test {} <-> Question {}", id, qId);
                 test.addQuestion(
                         question,
                         tqDto.getMarks() != null ? tqDto.getMarks() : question.getMarks(),
                         tqDto.getSectionName() != null ? tqDto.getSectionName() : "General",
-                        tqDto.getOrderIndex() != null ? tqDto.getOrderIndex() : i);
+                        tqDto.getOrderIndex() != null ? tqDto.getOrderIndex() : seenIds.size());
             }
         }
 
-        test = testRepository.save(test);
-        return mapToDTO(testRepository.save(test));
+        try {
+            Test saved = testRepository.save(test);
+            log.info("Successfully saved test {}. Final question count: {}", id, saved.getTestQuestions().size());
+            return mapToDTO(saved);
+        } catch (Exception e) {
+            log.error("CRITICAL: Failed to finalize test update for {}. Error: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Update failed: " + e.getMessage(), e);
+        }
     }
 
     @Transactional
     public TestDTO updateTestStatus(Long id, String status) {
-        Test test = testRepository.findById(java.util.Objects.requireNonNull(id))
+        Test test = testRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new RuntimeException("Test not found"));
-        // Verify department access
         departmentSecurityService.verifyDepartmentAccess(test.getDepartment());
 
         test.setStatus(TestStatus.valueOf(status));
@@ -222,14 +186,12 @@ public class TestService {
     @Transactional
     public void deleteTest(Long id) {
         log.info("Attempting to delete test with ID: {}", id);
-        Test test = testRepository.findById(java.util.Objects.requireNonNull(id))
+        Test test = testRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new RuntimeException("Test not found with ID: " + id));
 
-        // Verify department access
         departmentSecurityService.verifyDepartmentAccess(test.getDepartment());
 
         try {
-            // Delete the test (TestQuestions will be cascade deleted)
             testRepository.delete(test);
             log.info("Successfully deleted test with ID: {}", id);
         } catch (Exception e) {
@@ -239,33 +201,84 @@ public class TestService {
     }
 
     private TestDTO mapToDTO(Test test) {
-        TestDTO dto = new TestDTO();
-        dto.setId(test.getId());
-        dto.setTitle(test.getTitle());
-        dto.setDescription(test.getDescription());
-        dto.setDepartment(test.getDepartment());
-        dto.setStartDateTime(test.getStartDateTime());
-        dto.setEndDateTime(test.getEndDateTime());
-        dto.setDurationMinutes(test.getDurationMinutes());
-        dto.setType(test.getType().name());
-        dto.setStatus(test.getStatus().name());
-        dto.setTestType(test.getTestType());
-        dto.setInstructions(test.getInstructions());
-        dto.setCreatedAt(test.getCreatedAt());
-        dto.setUpdatedAt(test.getUpdatedAt());
+        return TestDTO.builder()
+                .id(test.getId())
+                .title(test.getTitle())
+                .description(test.getDescription())
+                .department(test.getDepartment())
+                .startDateTime(test.getStartDateTime())
+                .endDateTime(test.getEndDateTime())
+                .durationMinutes(test.getDurationMinutes())
+                .type(test.getType().name())
+                .status(test.getStatus().name())
+                .testType(test.getTestType())
+                .instructions(test.getInstructions())
+                .testQuestions(test.getTestQuestions().stream()
+                        .map(this::mapQuestionToDTO)
+                        .collect(Collectors.toList()))
+                .createdAt(test.getCreatedAt())
+                .updatedAt(test.getUpdatedAt())
+                .build();
+    }
 
-        if (test.getTestQuestions() != null) {
-            dto.setTestQuestions(test.getTestQuestions().stream()
-                    .map(tq -> TestQuestionDTO.builder()
-                            .id(tq.getId())
-                            .questionId(tq.getQuestion().getId())
-                            .question(questionService.mapQuestionToDTO(tq.getQuestion()))
-                            .marks(tq.getMarks())
-                            .sectionName(tq.getSectionName())
-                            .orderIndex(tq.getOrderIndex())
-                            .build())
-                    .toList());
+    private TestQuestionDTO mapQuestionToDTO(TestQuestion tq) {
+        Question q = tq.getQuestion();
+
+        // Create the appropriate DTO based on question type
+        QuestionDTO questionDTO;
+
+        if (q.getType() == QuestionType.MCQ) {
+            MCQQuestionDTO mcqDTO = new MCQQuestionDTO();
+            mcqDTO.setId(q.getId());
+            mcqDTO.setType(q.getType());
+            mcqDTO.setQuestionText(q.getQuestionText());
+            mcqDTO.setMarks(q.getMarks());
+            mcqDTO.setDepartment(q.getDepartment());
+            mcqDTO.setExplanation(q.getExplanation());
+            mcqDTO.setOptionA(q.getOptionA());
+            mcqDTO.setOptionB(q.getOptionB());
+            mcqDTO.setOptionC(q.getOptionC());
+            mcqDTO.setOptionD(q.getOptionD());
+            mcqDTO.setCorrectOption(q.getCorrectOption());
+            questionDTO = mcqDTO;
+        } else {
+            // Coding question
+            CodingQuestionDTO codingDTO = new CodingQuestionDTO();
+            codingDTO.setId(q.getId());
+            codingDTO.setType(q.getType());
+            codingDTO.setQuestionText(q.getQuestionText());
+            codingDTO.setMarks(q.getMarks());
+            codingDTO.setDepartment(q.getDepartment());
+            codingDTO.setExplanation(q.getExplanation());
+            codingDTO.setStarterCode(q.getStarterCode());
+            codingDTO.setTestCases(q.getTestCases());
+            codingDTO.setAllowedLanguageIds(q.getAllowedLanguageIds());
+            questionDTO = codingDTO;
         }
-        return dto;
+
+        return TestQuestionDTO.builder()
+                .questionId(q.getId())
+                .question(questionDTO)
+                .marks(tq.getMarks())
+                .sectionName(tq.getSectionName())
+                .orderIndex(tq.getOrderIndex())
+                .build();
+    }
+
+    public List<TestDTO> getAvailableTestsForStudent() {
+        List<Test> tests = testRepository.findAll();
+        LocalDateTime now = LocalDateTime.now();
+
+        return tests.stream()
+                .filter(test -> test.getStatus() == TestStatus.PUBLISHED &&
+                        test.getStartDateTime().isBefore(now) &&
+                        test.getEndDateTime().isAfter(now))
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public BulkUploadResult uploadQuestionsToTest(Long testId, MultipartFile file) {
+        return new BulkUploadResult();
     }
 }

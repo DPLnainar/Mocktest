@@ -65,6 +65,7 @@ code {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(107, 114, 128, 1);
 }
+
 .status-offline {
   color: #ef4444;
 }
@@ -83,9 +84,12 @@ code {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -104,9 +108,19 @@ code {
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-10px);
+  }
+
+  75% {
+    transform: translateX(10px);
+  }
 }
 
 /* Monaco Editor container */
@@ -129,7 +143,9 @@ code {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Toast notifications */
@@ -138,4 +154,38 @@ code {
   top: 1rem;
   right: 1rem;
   z-index: 10000;
+}
+
+/* ========================================= */
+/* GLOBAL DARK MODE INPUT OVERRIDES (FIX)    */
+/* ========================================= */
+input,
+textarea,
+select,
+.form-control,
+.form-select {
+  background-color: #374151 !important;
+  /* bg-gray-700 */
+  color: #ffffff !important;
+  border-color: #4b5563 !important;
+  /* border-gray-600 */
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+.form-control:focus,
+.form-select:focus {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+  border-color: #3b82f6 !important;
+  /* blue-500 */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af !important;
+  /* text-gray-400 */
+  opacity: 1;
 }

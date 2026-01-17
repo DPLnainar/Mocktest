@@ -10,6 +10,7 @@ export default function StudentTestListPage() {
     const { logout } = useAuthStore();
     const navigate = useNavigate();
     const [completedTestIds, setCompletedTestIds] = useState(new Set());
+    const [inProgressTestIds, setInProgressTestIds] = useState(new Set());
 
     useEffect(() => {
         fetchAvailableTests();
@@ -19,8 +20,16 @@ export default function StudentTestListPage() {
     const fetchHistory = async () => {
         try {
             const { data } = await api.get('/student/history');
-            const completed = new Set(data.map(attempt => attempt.testId));
+            const completed = new Set(
+                data.filter(a => a.status === 'SUBMITTED' || a.status === 'FROZEN')
+                    .map(a => a.testId)
+            );
+            const inProgress = new Set(
+                data.filter(a => a.status === 'IN_PROGRESS' || a.status === 'STARTED')
+                    .map(a => a.testId)
+            );
             setCompletedTestIds(completed);
+            setInProgressTestIds(inProgress);
         } catch (error) {
             console.error('Failed to fetch history:', error);
         }
@@ -95,6 +104,7 @@ export default function StudentTestListPage() {
                                     status="active"
                                     navigate={navigate}
                                     isCompleted={completedTestIds.has(test.id)}
+                                    isInProgress={inProgressTestIds.has(test.id)}
                                 />
                             ))}
                         </div>
@@ -136,7 +146,7 @@ export default function StudentTestListPage() {
     );
 }
 
-function TestCard({ test, status, navigate, isCompleted }) {
+function TestCard({ test, status, navigate, isCompleted, isInProgress }) {
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
         return date.toLocaleString('en-US', {
@@ -216,6 +226,13 @@ function TestCard({ test, status, navigate, isCompleted }) {
                             className="w-full px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition font-bold text-lg border border-gray-600"
                         >
                             View Results (Completed)
+                        </button>
+                    ) : isInProgress ? (
+                        <button
+                            onClick={handleStartTest}
+                            className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-bold text-lg border border-blue-500 shadow-lg shadow-blue-900/20"
+                        >
+                            Resume Test →
                         </button>
                     ) : (
                         <button

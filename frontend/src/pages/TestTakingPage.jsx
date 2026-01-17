@@ -6,14 +6,20 @@ import { useAIProctoring } from '../hooks/useAIProctoring';
 import { useExtensionDetection } from '../hooks/useExtensionDetection';
 import { useKeystrokeAnalysis } from '../hooks/useKeystrokeAnalysis';
 import { useIPTracking } from '../hooks/useIPTracking';
-import useAntiCheat from '../hooks/useAntiCheat';
+import { useViolationDetection } from '../hooks/useViolationDetection';
+import { useScreenCaptureDetection } from '../hooks/useScreenCaptureDetection';
+import { useGlobalErrorHandler } from '../hooks/useGlobalErrorHandler';
 import ProctoringNotice from '../components/ProctoringNotice';
 import WebcamPreview from '../components/WebcamPreview';
+import AntiPhotoWatermark from '../components/AntiPhotoWatermark';
 import toast from 'react-hot-toast';
 
 export default function TestTakingPage() {
     const { testId } = useParams();
     const navigate = useNavigate();
+
+    // Add global error handler
+    useGlobalErrorHandler();
     const { startTest, getAttempt, submitAnswer, executeCode, submitTest, violations } = useTestStore();
 
     const [test, setTest] = useState(null);
@@ -24,7 +30,7 @@ export default function TestTakingPage() {
 
     const [codeAnswers, setCodeAnswers] = useState({});
     const [selectedLanguages, setSelectedLanguages] = useState({}); // Map<qId, langId>
-    const [timeRemaining, setTimeRemaining] = useState(0);
+    const [timeRemaining, setTimeRemaining] = useState(null);
     const [loading, setLoading] = useState(true);
     const [testStarted, setTestStarted] = useState(false);
     const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -36,9 +42,17 @@ export default function TestTakingPage() {
     const autoSaveInterval = useRef(null);
 
     // AI Proctoring
-    const { videoRef, modelsLoaded, faceCount, detectedObjects, aiViolationCount } = useAIProctoring(
+    const { videoRef, modelsLoaded, faceCount, detectedObjects, aiViolationCount, cameraStatus, headRotation } = useAIProctoring(
         attempt?.id,
-        !loading && attempt !== null
+        !loading && attempt !== null,
+        () => {
+            // Immediate Freeze Callback
+            console.log('CRITICAL: Phone/Camera detected - Freezing immediately');
+            setIsFrozen(true);
+            setTimeout(() => {
+                window.location.href = '/exam-terminated';
+            }, 2000);
+        }
     );
 
     // Extension Detection
@@ -60,8 +74,31 @@ export default function TestTakingPage() {
         testStarted
     );
 
-    // General Anti-Cheat (Tab switch, Fullscreen, Copy/Paste)
-    useAntiCheat(attempt?.id, testStarted);
+    // Violation Detection (Tab switch, Fullscreen, Window blur)
+    useViolationDetection(attempt?.id, testId);
+
+    // Screen Capture Detection (Screenshot, Phone camera)
+    useScreenCaptureDetection(attempt?.id, testStarted);
+
+    // Front-end Force Guard: Monitor fullscreen state directly
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            if (testStarted && !document.fullscreenElement && !isFrozen) {
+                console.log('Frontend Guard: Fullscreen exited - Freezing UI');
+                setIsFrozen(true);
+                toast.error('Fullscreen exited! Test terminated.');
+
+                // Permanent Fix: Force navigation away after 2 seconds
+                // This prevents users from trying to unfreeze the UI via DevTools
+                setTimeout(() => {
+                    window.location.href = '/exam-terminated';
+                }, 2000);
+            }
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, [testStarted, isFrozen]);
 
     const initialized = useRef(false);
 
@@ -87,7 +124,11 @@ export default function TestTakingPage() {
                 console.log('Trying to get existing attempt...');
                 attemptData = await getAttempt(testId);
                 console.log('Found existing attempt:', attemptData);
-                toast.success('Resumed previous session');
+                try {
+                    toast.success('Resumed previous session');
+                } catch (toastError) {
+                    console.error('Toast error:', toastError);
+                }
             } catch (e) {
                 console.log('No existing attempt, will create new one');
             }
@@ -102,7 +143,11 @@ export default function TestTakingPage() {
             setAttempt(attemptData);
 
             if (attemptData.status === 'SUBMITTED') {
-                toast.error('You have already submitted this test');
+                try {
+                    toast.error('You have already submitted this test');
+                } catch (toastError) {
+                    console.error('Toast error:', toastError);
+                }
                 navigate('/student/history');
                 return;
             }
@@ -117,25 +162,67 @@ export default function TestTakingPage() {
             const { data: testData } = await testAPI.getStudentTest(testId);
 
             console.log('Test data received:', testData);
+            console.log('Test questions:', testData.testQuestions);
             setTest(testData);
 
             // Setup questions from testQuestions
-            if (testData.testQuestions) {
+            if (testData.testQuestions && testData.testQuestions.length > 0) {
+                console.log('Processing questions...');
                 const mappedQuestions = testData.testQuestions
                     .sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0))
-                    .map(tq => ({
-                        ...tq.question,
-                        id: tq.questionId,
-                        marks: tq.marks,
-                        sectionName: tq.sectionName
-                    }));
+                    .map((tq, idx) => {
+                        console.log(`Question ${idx}:`, tq);
+
+                        // Handle case where question object might not be fully populated
+                        const questionData = tq.question || {};
+
+                        // Guard against null/undefined question data
+                        if (!tq.question) {
+                            console.warn(`Question ${idx} has null question data:`, tq);
+                        }
+
+                        return {
+                            ...questionData,
+                            id: tq.questionId || questionData?.id || `temp-${idx}`,
+                            marks: tq.marks || questionData?.marks || 1,
+                            sectionName: tq.sectionName || 'General',
+                            questionText: questionData?.questionText || 'Question text not available',
+                            type: questionData?.type || 'MCQ',
+                            // Ensure options are available for MCQ
+                            optionA: questionData?.optionA || '',
+                            optionB: questionData?.optionB || '',
+                            optionC: questionData?.optionC || '',
+                            optionD: questionData?.optionD || '',
+                        };
+                    });
+
+                console.log('Mapped questions:', mappedQuestions);
                 setQuestions(mappedQuestions);
             } else {
+                console.warn('No test questions found in test data');
                 setQuestions([]);
+                try {
+                    toast.error('This test has no questions');
+                } catch (toastError) {
+                    console.error('Toast error:', toastError);
+                }
             }
 
-            // Set timer
-            setTimeRemaining(testData.durationMinutes * 60);
+            // Set timer based on actual server start time
+            if (attemptData.startedAt) {
+                // Parse startedAt (Assuming ISO string from backend)
+                const startTime = new Date(attemptData.startedAt).getTime();
+                const now = Date.now();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                const totalSeconds = testData.durationMinutes * 60;
+                const remaining = Math.max(0, totalSeconds - elapsedSeconds);
+
+                console.log(`Timer Sync: Started=${attemptData.startedAt}, Elapsed=${elapsedSeconds}s, Remaining=${remaining}s`);
+                setTimeRemaining(remaining);
+            } else {
+                // Fallback (unsafe)
+                setTimeRemaining(testData.durationMinutes * 60);
+            }
 
             // Auto-save setup
             autoSaveInterval.current = setInterval(() => {
@@ -154,6 +241,9 @@ export default function TestTakingPage() {
 
     // Timer countdown
     useEffect(() => {
+        // Prevent timer logic if test hasn't started or is loading or time is null
+        if (!testStarted || loading || timeRemaining === null) return;
+
         if (timeRemaining <= 0) {
             handleSubmitTest();
             return;
@@ -164,7 +254,7 @@ export default function TestTakingPage() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [timeRemaining]);
+    }, [timeRemaining, testStarted, loading]);
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
@@ -174,7 +264,10 @@ export default function TestTakingPage() {
 
     const saveCurrentAnswer = async () => {
         const question = questions[currentQuestionIndex];
-        if (!question || !attempt) return;
+        if (!question || !attempt || !question.id) {
+            console.log('Skipping auto-save: missing question or attempt');
+            return;
+        }
 
         const answer = question.type === 'MCQ'
             ? answers[question.id]
@@ -185,6 +278,7 @@ export default function TestTakingPage() {
                 await submitAnswer(attempt.id, question.id, answer);
             } catch (error) {
                 console.error('Auto-save failed:', error);
+                // Don't show error toast for auto-save failures
             }
         }
     };
@@ -303,6 +397,11 @@ export default function TestTakingPage() {
 
     const handleSubmitTest = async () => {
         if (submitting) return; // Prevent double submission
+
+        if (!attempt) {
+            console.error('Cannot submit test: Attempt is null');
+            return;
+        }
 
         try {
             setSubmitting(true);
@@ -649,7 +748,7 @@ export default function TestTakingPage() {
             )}
 
             {/* Proctoring Notice */}
-            <ProctoringNotice violationCount={violationCount + aiViolationCount + violations.length} />
+            <ProctoringNotice violationCount={(copyPasteCount || 0) + (aiViolationCount || 0) + (violations?.length || 0)} />
 
             {/* Webcam Preview */}
             {!loading && attempt && (
@@ -658,7 +757,14 @@ export default function TestTakingPage() {
                     faceCount={faceCount}
                     detectedObjects={detectedObjects}
                     modelsLoaded={modelsLoaded}
+                    cameraStatus={cameraStatus}
+                    headRotation={headRotation}
                 />
+            )}
+
+            {/* Anti-Photo Watermark */}
+            {testStarted && attempt && (
+                <AntiPhotoWatermark attemptId={attempt.id} />
             )}
         </div>
     );

@@ -8,6 +8,7 @@ import com.examportal.security.DepartmentSecurityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StudentHistoryService {
 
     private final StudentAttemptRepository attemptRepository;
@@ -36,6 +38,18 @@ public class StudentHistoryService {
                 .forEach(test -> testTitles.put(test.getId(), test.getTitle()));
 
         return attempts.stream().map(attempt -> {
+            // PERMANENT FIX: Auto-submit if deadline has passed
+            if (attempt.getStatus() == AttemptStatus.IN_PROGRESS) {
+                Test test = testRepository.findById(attempt.getTestId()).orElse(null);
+                if (test != null && LocalDateTime.now().isAfter(test.getEndDateTime())) {
+                    log.info("Auto-submitting expired attempt {} for test {}", attempt.getId(), test.getId());
+                    attempt.setStatus(AttemptStatus.SUBMITTED);
+                    attempt.setSubmittedAt(test.getEndDateTime());
+                    attempt.setAutoSubmitted(true);
+                    attemptRepository.save(attempt);
+                }
+            }
+
             Map<String, Object> map = new HashMap<>();
             map.put("id", attempt.getId());
             map.put("testId", attempt.getTestId());
@@ -43,6 +57,13 @@ public class StudentHistoryService {
             map.put("status", attempt.getStatus());
             map.put("startedAt", attempt.getStartedAt());
             map.put("submittedAt", attempt.getSubmittedAt());
+
+            Test test = testRepository.findById(attempt.getTestId()).orElse(null);
+            if (test != null) {
+                map.put("testEndDate", test.getEndDateTime());
+                map.put("durationMinutes", test.getDurationMinutes());
+            }
+
             map.put("score", attempt.getScore());
             map.put("totalMarks", attempt.getTotalMarks());
             map.put("violationCount", attempt.getViolationCount());

@@ -2,6 +2,10 @@ package com.examportal.entity;
 
 public enum ViolationSeverity {
     LOW,
+    MINOR,
     MEDIUM,
-    HIGH
+    MAJOR,
+    HIGH,
+    CRITICAL,
+    INFO
 }

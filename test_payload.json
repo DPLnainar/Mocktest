@@ -1,0 +1,23 @@
+{
+    "questions": [
+        {
+            "type": "CODING",
+            "questionText": "Title: Test\n\nDescription: Test Desc",
+            "marks": 10,
+            "allowedLanguageIds": [
+                62,
+                71
+            ],
+            "testCases": [
+                {
+                    "input": "1",
+                    "output": "1"
+                }
+            ],
+            "constraints": {
+                "forbidLoops": true
+            },
+            "starterCode": "print('hello')"
+        }
+    ]
+}

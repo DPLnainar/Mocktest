@@ -99,14 +99,20 @@ export const useExtensionDetection = (attemptId, isActive = false) => {
 
     const logExtensionViolation = async (extensions) => {
         try {
-            await api.post('/proctor/violation', {
-                attemptId,
-                eventType: 'SUSPICIOUS_EXTENSION_DETECTED',
-                metadata: {
+            await api.post('/violations/report', {
+                sessionId: attemptId,
+                examId: null,
+                violationType: 'SUSPICIOUS_EXTENSION_DETECTED',
+                severity: 'MAJOR',
+                message: `Detected ${extensions.length} suspicious extension(s): ${extensions.map(e => e.name).join(', ')}`,
+                evidence: {
                     extensions: extensions.map(ext => ext.name),
                     count: extensions.length,
                     details: extensions
-                }
+                },
+                consecutiveFrames: 1,
+                confidence: 1.0,
+                confirmed: true
             });
 
             // Warn user

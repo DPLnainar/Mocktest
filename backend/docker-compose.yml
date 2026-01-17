@@ -48,7 +48,7 @@ services:
       RABBITMQ_DEFAULT_VHOST: exam_vhost
     ports:
       - "5672:5672" # AMQP port
-      - "15672:15672" # Management UI
+      - "16672:15672" # Management UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:

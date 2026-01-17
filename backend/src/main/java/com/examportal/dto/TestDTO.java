@@ -1,5 +1,7 @@
 package com.examportal.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +15,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TestDTO {
 
     private Long id;
@@ -26,9 +29,11 @@ public class TestDTO {
     private String department;
 
     @NotNull(message = "Start date time is required")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startDateTime;
 
     @NotNull(message = "End date time is required")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime endDateTime;
 
     @NotNull(message = "Duration is required")

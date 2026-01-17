@@ -65,19 +65,21 @@ public class Judge0Service {
      */
     @CircuitBreaker(name = "judge0Service", fallbackMethod = "executionFallback")
     public ExecutionResult executeCode(String code, Integer languageId, String stdin, Long studentId) {
-        return executeCode(code, languageId, stdin, studentId, 5.0, 10.0, 256000.0);
+        return executeCode(UUID.randomUUID().toString(), code, languageId, stdin, studentId, 5.0, 10.0, 256000.0, null,
+                null);
     }
 
     /**
-     * Submit code for execution with custom limits
+     * Submit code for execution with custom limits and context
      */
     @CircuitBreaker(name = "judge0Service", fallbackMethod = "executionFallbackWithLimits")
-    public ExecutionResult executeCode(String code, Integer languageId, String stdin, Long studentId,
-            Double cpuTimeLimit, Double wallTimeLimit, Double memoryLimit) {
+    public ExecutionResult executeCode(String executionId, String code, Integer languageId, String stdin,
+            Long studentId,
+            Double cpuTimeLimit, Double wallTimeLimit, Double memoryLimit, Long attemptId, Long questionId) {
         // Check rate limit
         if (!checkRateLimit(studentId)) {
             return ExecutionResult.builder()
-                    .executionId(UUID.randomUUID().toString())
+                    .executionId(executionId)
                     .status(ExecutionResult.ExecutionStatus.INTERNAL_ERROR)
                     .error("Rate limit exceeded. Maximum " + maxConcurrentPerStudent +
                             " concurrent executions allowed.")
@@ -85,7 +87,9 @@ public class Judge0Service {
                     .build();
         }
 
-        String executionId = UUID.randomUUID().toString();
+        // Use provided ID or generate new
+        if (executionId == null)
+            executionId = UUID.randomUUID().toString();
 
         try {
             // Increment student's concurrent execution count
@@ -110,7 +114,8 @@ public class Judge0Service {
             Judge0SubmissionResponse response = judge0Client.createSubmission(apiKey, apiHost, request);
 
             // Queue execution for polling
-            executionQueueService.queueExecution(executionId, response.getToken(), studentId);
+            // Queue execution for polling
+            executionQueueService.queueExecution(executionId, response.getToken(), studentId, attemptId, questionId);
 
             // Return initial result
             return ExecutionResult.builder()

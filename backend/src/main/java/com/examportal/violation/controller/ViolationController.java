@@ -66,7 +66,7 @@ public class ViolationController {
         Violation.ViolationType type = Violation.ViolationType.valueOf(request.getViolationType());
         Violation.Severity severity = Violation.Severity.valueOf(request.getSeverity());
 
-        int strikeCount = violationService.recordViolation(
+        ViolationService.ViolationRecordResult result = violationService.recordViolation(
                 request.getSessionId(),
                 student.getId(),
                 request.getExamId(),
@@ -75,9 +75,12 @@ public class ViolationController {
                 request.getMessage(),
                 request.getEvidence());
 
+        int strikeCount = result.strikeCount();
+        boolean terminated = result.isFrozen() || strikeCount >= 5;
+
         return ResponseEntity.ok(new ViolationResponse(
                 strikeCount,
-                strikeCount >= 5,
+                terminated,
                 "Violation recorded. Total strikes: " + strikeCount));
     }
 

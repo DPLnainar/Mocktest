@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { useExamStore } from '../store/examStore'
 import { violationAPI } from '../services/api'
-import { queueViolation } from '../services/indexedDB'
+import api from '../services/api'
 import toast from 'react-hot-toast'
 
 /**
@@ -11,23 +10,29 @@ import toast from 'react-hot-toast'
  * Reports violations with debouncing
  */
 export function useViolationDetection(sessionId, examId) {
-  const { addViolation, setStrikeCount, isOnline } = useExamStore()
   const lastViolationRef = useRef({})
   const tabHiddenTimeRef = useRef(null)
 
   const reportViolation = async (type, severity, description, evidence = {}) => {
+    // Guard against null sessionId
+    if (!sessionId) {
+      console.warn('Cannot report violation: sessionId is null')
+      return
+    }
+
     // Debounce - Don't report same violation within 10 seconds
     const now = Date.now()
     const lastTime = lastViolationRef.current[type] || 0
-    
-    if (now - lastTime < 10000) {
+
+    // Bypass debounce for CRITICAL violations (always report)
+    if (severity !== 'CRITICAL' && now - lastTime < 10000) {
       console.log(`⏭️ Skipping duplicate ${type} violation (debounced)`)
       return
     }
-    
+
     lastViolationRef.current[type] = now
 
-    // Phase 8: Enhanced violation with metadata
+    // Enhanced violation with metadata
     const violation = {
       sessionId,
       examId,
@@ -39,36 +44,27 @@ export function useViolationDetection(sessionId, examId) {
         timestamp: new Date().toISOString(),
         userAgent: navigator.userAgent,
       },
-      // Phase 8: Add consecutive frame tracking metadata
       consecutiveFrames: evidence.consecutiveFrames || 1,
       confidence: evidence.confidence || 1.0,
-      confirmed: true, // Tab switches are always confirmed
+      confirmed: true,
     }
 
     try {
-      if (isOnline) {
-        // Online - report immediately
-        const response = await violationAPI.report(violation)
-        const { strikeCount, terminated } = response.data
+      // Report violation to backend
+      const response = await violationAPI.report(violation)
+      const { strikeCount, terminated } = response.data
 
-        addViolation({ type, strikeCount: severity === 'MAJOR' ? 2 : 1 })
-        setStrikeCount(strikeCount)
-
-        toast.error(`Violation detected: ${description}`)
+      toast.error(`Violation detected: ${description}`)
+      if (strikeCount) {
         toast.error(`Strikes: ${strikeCount}/5`, { icon: '⚠️' })
+      }
 
-        if (terminated) {
-          window.location.href = '/exam-terminated'
-        }
-      } else {
-        // Offline - queue for later
-        await queueViolation(sessionId, violation)
-        toast.warning('Violation queued (offline)', { icon: '📡' })
+      if (terminated) {
+        window.location.href = '/exam-terminated'
       }
     } catch (error) {
       console.error('Failed to report violation:', error)
-      // Queue for later
-      await queueViolation(sessionId, violation)
+      // Silently fail - don't show error to user
     }
   }
 
@@ -76,14 +72,14 @@ export function useViolationDetection(sessionId, examId) {
     if (!sessionId || !examId) return
 
     // ===== Tab Switch / Window Blur Detection =====
-    
+
     const handleVisibilityChange = () => {
       if (document.hidden) {
         tabHiddenTimeRef.current = Date.now()
       } else {
         if (tabHiddenTimeRef.current) {
           const duration = Date.now() - tabHiddenTimeRef.current
-          
+
           if (duration > 2000) { // Only report if hidden > 2 seconds
             reportViolation(
               'TAB_SWITCH',
@@ -92,7 +88,7 @@ export function useViolationDetection(sessionId, examId) {
               { duration }
             )
           }
-          
+
           tabHiddenTimeRef.current = null
         }
       }
@@ -108,20 +104,41 @@ export function useViolationDetection(sessionId, examId) {
     }
 
     // ===== Fullscreen Exit Detection =====
-    
-    const handleFullscreenChange = () => {
+
+    const handleFullscreenChange = async () => {
       if (!document.fullscreenElement) {
-        reportViolation(
+        await reportViolation(
           'FULLSCREEN_EXIT',
-          'MAJOR',
-          'Exited fullscreen mode',
+          'CRITICAL',
+          'Exited fullscreen mode - Test will be frozen',
           {}
         )
       }
     }
 
+    const checkFreezeStatus = async (retries = 3) => {
+      try {
+        console.log(`Checking freeze status (retries left: ${retries})...`)
+        const { data } = await api.get(`/student/attempts/${sessionId}`)
+
+        console.log('Current status:', data.status)
+
+        if (data.status === 'FROZEN') {
+          console.log('Test IS frozen, reloading...')
+          toast.error('Test has been frozen due to violations', { duration: 5000 })
+          // Force immediate reload
+          window.location.reload()
+        } else if (retries > 0) {
+          // Retry after 1 second if not frozen yet
+          setTimeout(() => checkFreezeStatus(retries - 1), 1000)
+        }
+      } catch (error) {
+        console.error('Failed to check freeze status:', error)
+      }
+    }
+
     // ===== Copy/Paste Detection =====
-    
+
     const handleCopy = (e) => {
       // Allow copy from code editor (own content)
       console.log('Copy detected (allowed)')
@@ -129,7 +146,7 @@ export function useViolationDetection(sessionId, examId) {
 
     const handlePaste = (e) => {
       const text = e.clipboardData.getData('text')
-      
+
       if (text.length > 50) { // Suspicious large paste
         reportViolation(
           'COPY_PASTE_DETECTED',
@@ -141,7 +158,7 @@ export function useViolationDetection(sessionId, examId) {
     }
 
     // ===== Context Menu (Right Click) =====
-    
+
     const handleContextMenu = (e) => {
       e.preventDefault()
       toast('Right-click disabled during exam', { icon: '🚫' })
@@ -155,16 +172,8 @@ export function useViolationDetection(sessionId, examId) {
     document.addEventListener('paste', handlePaste)
     document.addEventListener('contextmenu', handleContextMenu)
 
-    // Request fullscreen
-    const enterFullscreen = async () => {
-      try {
-        await document.documentElement.requestFullscreen()
-      } catch (error) {
-        console.error('Failed to enter fullscreen:', error)
-      }
-    }
-    
-    enterFullscreen()
+    // Note: Fullscreen is handled by TestTakingPage.jsx with user gesture
+    // Don't request fullscreen here as it will fail without user interaction
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange)
@@ -174,7 +183,7 @@ export function useViolationDetection(sessionId, examId) {
       document.removeEventListener('paste', handlePaste)
       document.removeEventListener('contextmenu', handleContextMenu)
     }
-  }, [sessionId, examId, isOnline])
+  }, [sessionId, examId])
 
   return { reportViolation }
 }

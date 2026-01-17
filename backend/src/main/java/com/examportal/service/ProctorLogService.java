@@ -54,12 +54,15 @@ public class ProctorLogService {
 
         savedLog = proctorLogRepository.save(java.util.Objects.requireNonNull(savedLog));
 
-        // Increment violation count
-        attempt.setViolationCount(attempt.getViolationCount() + 1);
-        attemptRepository.save(attempt);
-
-        log.info("Violation logged: {} for attempt {} (total: {})",
-                type, attemptId, attempt.getViolationCount());
+        // Increment violation count ONLY if it's not INFO severity
+        if (severity != ViolationSeverity.INFO) {
+            attempt.setViolationCount(attempt.getViolationCount() + 1);
+            attemptRepository.save(attempt);
+            log.info("Violation logged: {} for attempt {} (total: {})",
+                    type, attemptId, attempt.getViolationCount());
+        } else {
+            log.debug("Informational log saved: {} for attempt {}", type, attemptId);
+        }
 
         return savedLog;
     }
@@ -104,9 +107,11 @@ public class ProctorLogService {
 
     private ViolationSeverity determineSeverity(ViolationType type) {
         return switch (type) {
-            case MULTIPLE_FACES, PHONE_DETECTED, CAMERA_DETECTED, IP_MISMATCH -> ViolationSeverity.HIGH;
+            case MULTIPLE_FACES, PHONE_DETECTED, CAMERA_DETECTED, IP_MISMATCH, IP_ADDRESS_CHANGED ->
+                ViolationSeverity.HIGH;
             case TAB_SWITCH, FULLSCREEN_EXIT, NO_FACE, KEYSTROKE_ANOMALY -> ViolationSeverity.MEDIUM;
             case COPY_ATTEMPT, PASTE_ATTEMPT, DEVTOOLS_OPENED -> ViolationSeverity.LOW;
+            case IP_TRACKED -> ViolationSeverity.INFO;
         };
     }
 

@@ -76,6 +76,7 @@ public class Test {
 
     public void addQuestion(Question question, Integer marks, String sectionName, Integer orderIndex) {
         TestQuestion tq = TestQuestion.builder()
+                .id(new TestQuestionId(this.id, question.getId()))
                 .test(this)
                 .question(question)
                 .marks(marks)

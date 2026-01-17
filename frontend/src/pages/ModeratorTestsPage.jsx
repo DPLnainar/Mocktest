@@ -136,6 +136,7 @@ export default function ModeratorTestsPage() {
 }
 
 function TestCard({ test, onDelete, onPublish }) {
+    const navigate = useNavigate();
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
         return date.toLocaleString('en-US', {
@@ -147,28 +148,24 @@ function TestCard({ test, onDelete, onPublish }) {
     };
 
     const getStatusBadge = () => {
-        // Use backend status if available, otherwise fall back to time-based
-        if (test.status) {
-            const statusConfig = {
-                'DRAFT': { bg: 'bg-yellow-600', text: 'Draft' },
-                'PUBLISHED': { bg: 'bg-green-600', text: 'Published' },
-                'ARCHIVED': { bg: 'bg-gray-600', text: 'Archived' }
-            };
-            const config = statusConfig[test.status] || statusConfig['DRAFT'];
-            return <span className={`px-3 py-1 ${config.bg} text-white text-sm rounded-full`}>{config.text}</span>;
+        if (test.status === 'ARCHIVED') {
+            return <span className="px-3 py-1 bg-gray-600 text-white text-sm rounded-full">Archived</span>;
         }
 
-        // Fallback to time-based status
+        if (test.status === 'DRAFT') {
+            return <span className="px-3 py-1 bg-yellow-600 text-white text-sm rounded-full">Draft (Unpublished)</span>;
+        }
+
         const now = new Date();
         const start = new Date(test.startDateTime);
         const end = new Date(test.endDateTime);
 
         if (now < start) {
-            return <span className="px-3 py-1 bg-yellow-600 text-white text-sm rounded-full">Upcoming</span>;
+            return <span className="px-3 py-1 bg-blue-600 text-white text-sm rounded-full">Upcoming</span>;
         } else if (now > end) {
-            return <span className="px-3 py-1 bg-gray-600 text-white text-sm rounded-full">Expired</span>;
+            return <span className="px-3 py-1 bg-red-600 text-white text-sm rounded-full">Expired</span>;
         } else {
-            return <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-full">Active</span>;
+            return <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-full">Live</span>;
         }
     };
 
@@ -219,6 +216,12 @@ function TestCard({ test, onDelete, onPublish }) {
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition"
                 >
                     View Results
+                </button>
+                <button
+                    onClick={() => navigate(`/moderator/test/${test.id}`)}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm transition"
+                >
+                    📝 Edit
                 </button>
                 {/* Publish/Unpublish button */}
                 <button

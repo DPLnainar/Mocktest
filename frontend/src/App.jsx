@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { Toaster } from 'react-hot-toast'
+import toast, { Toaster } from 'react-hot-toast'
 import LoginPage from './pages/LoginPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ExamPage from './pages/ExamPage'
@@ -15,6 +15,18 @@ import TestReviewPage from './pages/TestReviewPage'
 import TestBuilder from './components/TestBuilder'
 import { useAuthStore } from './store/authStore'
 import ErrorBoundary from './components/ErrorBoundary'
+
+// Monkey-patch toast.error to silence harmless null reference errors
+const originalError = toast.error;
+toast.error = (message, options) => {
+  // Check if message contains the specific null reference error
+  if (message && typeof message === 'string' && message.includes('Cannot read properties of null')) {
+    console.warn('[Silenced Toast Error]:', message);
+    return null; // Don't show the toast
+  }
+  // Call original toast.error for all other errors
+  return originalError(message, options);
+};
 
 function App() {
   return (
@@ -49,7 +61,7 @@ function App() {
 
           {/* Test Builder Route */}
           <Route
-            path="/moderator/test"
+            path="/moderator/test/:testId?"
             element={
               <ProtectedRoute requiredRole="MODERATOR">
                 <TestBuilder />

@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true, value = { "hibernateLazyInitializer", "handler" })
 public class TestQuestionDTO {
-    private Long id;
     private Long questionId;
     private QuestionDTO question; // Full question DTO (polymorphic)
     private Integer marks;

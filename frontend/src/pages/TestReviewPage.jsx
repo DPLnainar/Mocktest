@@ -36,19 +36,26 @@ export default function TestReviewPage() {
     if (!review) return null;
 
     // Group questions by section
-    const groupedQuestions = review.questions.reduce((acc, q) => {
+    // Group questions by section
+    const groupedQuestions = {};
+    const questionsList = Array.isArray(review?.questions) ? review.questions : [];
+
+    // Debug logging
+    console.log("Test Review Data:", review);
+    console.log("Questions List:", questionsList);
+
+    questionsList.forEach(q => {
         const section = q.sectionName || 'Part-I';
-        if (!acc[section]) acc[section] = [];
-        acc[section].push(q);
-        return acc;
-    }, {});
+        if (!groupedQuestions[section]) groupedQuestions[section] = [];
+        groupedQuestions[section].push(q);
+    });
 
     return (
         <div className="min-h-screen bg-gray-900 p-8">
             <div className="max-w-4xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Test Review: {review.test.title}</h1>
+                        <h1 className="text-3xl font-bold text-white mb-2">Test Review: {review?.test?.title || "Test Review"}</h1>
                         <p className="text-gray-400">Section-based performance analysis</p>
                     </div>
                     <button

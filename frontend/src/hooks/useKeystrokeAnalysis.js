@@ -106,10 +106,16 @@ export const useKeystrokeAnalysis = (attemptId, questionId, isActive = false) =>
 
     const logKeystrokeViolation = async (type, metadata) => {
         try {
-            await api.post('/proctor/violation', {
-                attemptId,
-                eventType: type,
-                metadata
+            await api.post('/violations/report', {
+                sessionId: attemptId,
+                examId: null,
+                violationType: type,
+                severity: 'MAJOR',
+                message: getViolationMessage(type),
+                evidence: metadata,
+                consecutiveFrames: 1,
+                confidence: 1.0,
+                confirmed: true
             });
 
             const messages = {
@@ -122,6 +128,15 @@ export const useKeystrokeAnalysis = (attemptId, questionId, isActive = false) =>
         } catch (error) {
             console.error('Failed to log keystroke violation:', error);
         }
+    };
+
+    const getViolationMessage = (type) => {
+        const messages = {
+            'LARGE_PASTE': 'Large paste detected',
+            'SUSPICIOUS_TYPING_SPEED': 'Unusual typing pattern detected',
+            'RAPID_ANSWER_CHANGES': 'Rapid answer changes detected'
+        };
+        return messages[type] || 'Suspicious activity detected';
     };
 
     return {

@@ -46,13 +46,17 @@ public class TestAttemptService {
 
         // Verify department access
         String studentDepartment = departmentSecurityService.getCurrentUserDepartment();
-        log.info("Verifying access for Student {} (Dept: {}) to Test {} (Dept: {})",
-                studentId, studentDepartment, testId, test.getDepartment());
+        String testDept = test.getDepartment() != null ? test.getDepartment() : "General";
+        String stuDept = studentDepartment != null ? studentDepartment : "General";
 
-        if (!test.getDepartment().equals(studentDepartment) &&
-                !test.getDepartment().equals("MODERATOR") &&
-                !test.getDepartment().equals("General")) {
-            log.error("StartTest Failed: Access denied for Dept {}", studentDepartment);
+        log.info("Verifying access for Student {} (Dept: {}) to Test {} (Dept: {})",
+                studentId, stuDept, testId, testDept);
+
+        if (!testDept.equals(stuDept) &&
+                !testDept.equalsIgnoreCase("MODERATOR") &&
+                !testDept.equalsIgnoreCase("General") &&
+                !stuDept.equalsIgnoreCase("MODERATOR")) {
+            log.error("StartTest Failed: Access denied for Dept {}. Test Dept: {}", stuDept, testDept);
             throw new SecurityException("Access denied: Test not available for your department");
         }
 
@@ -222,11 +226,11 @@ public class TestAttemptService {
                 if (actualDurationMinutes < 0) {
                     log.warn("Negative duration detected! Assuming timezone skew and allowing submission.");
                 } else {
-                    log.error("Time limit exceeded for attempt {}: {} minutes (max {})",
+                    log.warn("Time limit exceeded for attempt {}: {} minutes (max {}). Marking as auto-submitted.",
                             attemptId, actualDurationMinutes, maxAllowedMinutes);
-                    throw new RuntimeException(
-                            "Time limit exceeded. Actual duration: " + actualDurationMinutes +
-                                    " minutes, allowed: " + maxAllowedMinutes + " minutes");
+                    attempt.setAutoSubmitted(true);
+                    // We proceed with submission rather than throwing exception to avoid "stuck"
+                    // attempts
                 }
             }
         } else {

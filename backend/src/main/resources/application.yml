@@ -121,8 +121,8 @@ logging:
   level:
     root: INFO
     com.examportal: DEBUG
-    org.springframework.security: TRACE
-    org.springframework.security.web: TRACE
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
     org.hibernate.SQL: WARN
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss} - %msg%n'

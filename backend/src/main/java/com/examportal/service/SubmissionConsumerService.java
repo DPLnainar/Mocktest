@@ -50,10 +50,13 @@ public class SubmissionConsumerService {
 
             // 2. Execute Code
             ExecutionResult result = submissionExecutionService.executeSubmission(
+                    message.getExecutionId(),
                     message.getCode(),
                     message.getLanguageId(),
                     message.getConstraints(),
-                    Objects.requireNonNull(message.getStudentId()));
+                    Objects.requireNonNull(message.getStudentId()),
+                    message.getAttemptId(),
+                    message.getQuestionId());
 
             // 3. Update Result in DB
             StudentAttempt attempt = attemptRepository.findById(Objects.requireNonNull(message.getAttemptId()))

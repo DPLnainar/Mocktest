@@ -15,4 +15,8 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByDepartmentAndType(String department, QuestionType type);
 
     List<Question> findByIdIn(List<Long> ids);
+
+    boolean existsByQuestionTextAndDepartment(String questionText, String department);
+
+    Question findByQuestionTextAndDepartment(String questionText, String department);
 }

@@ -1,0 +1,14 @@
+{
+    "questions": [
+        {
+            "type": "MCQ",
+            "questionText": "What is 2+2?",
+            "marks": 5,
+            "optionA": "3",
+            "optionB": "4",
+            "optionC": "5",
+            "optionD": "6",
+            "correctOption": "B"
+        }
+    ]
+}

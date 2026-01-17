@@ -75,9 +75,12 @@ export default function StudentHistoryPage() {
 }
 
 function TestHistoryCard({ attempt }) {
+    const navigate = useNavigate();
     const formatDate = (dateStr) => {
         if (!dateStr) return 'N/A';
-        const date = new Date(dateStr);
+        // Ensure date is treated as UTC if it comes without timezone info
+        const safeDateStr = dateStr.endsWith('Z') ? dateStr : `${dateStr}Z`;
+        const date = new Date(safeDateStr);
         return date.toLocaleString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -131,12 +134,29 @@ function TestHistoryCard({ attempt }) {
                 </div>
             )}
 
-            <a
-                href={`/student/history/tests/${attempt.testId}/review`}
-                className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
-            >
-                View Detailed Review
-            </a>
+            <div className="flex gap-4">
+                {(attempt.status === 'SUBMITTED' || attempt.status === 'FROZEN' || new Date(attempt.testEndDate) < new Date()) ? (
+                    <button
+                        onClick={() => navigate(`/student/history/tests/${attempt.testId}/review`)}
+                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                    >
+                        View Detailed Review
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => navigate(`/student/test/${attempt.testId}`)}
+                        className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                    >
+                        Resume Test
+                    </button>
+                )}
+
+                {(attempt.status === 'IN_PROGRESS' || attempt.status === 'STARTED') && new Date(attempt.testEndDate) > new Date() && (
+                    <div className="flex items-center text-yellow-500 text-sm">
+                        <span className="mr-2">●</span> Active Test
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

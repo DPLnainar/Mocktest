@@ -35,8 +35,11 @@ public class ExecutionQueueService {
      * @param executionId     Unique execution ID
      * @param submissionToken Judge0 submission token
      * @param studentId       Student ID
+     * @param attemptId       Student Attempt ID (optional)
+     * @param questionId      Question ID (optional)
      */
-    public void queueExecution(String executionId, String submissionToken, Long studentId) {
+    public void queueExecution(String executionId, String submissionToken, Long studentId, Long attemptId,
+            Long questionId) {
         try {
             // Store submission token
             String tokenKey = TOKEN_PREFIX + executionId;
@@ -48,12 +51,20 @@ public class ExecutionQueueService {
             redisTemplate.opsForValue().set(java.util.Objects.requireNonNull(studentKey),
                     java.util.Objects.requireNonNull(studentId.toString()), TTL_HOURS, TimeUnit.HOURS);
 
+            // Store Context (Attempt + Question)
+            if (attemptId != null && questionId != null) {
+                String contextKey = "execution:context:" + executionId;
+                String contextValue = attemptId + ":" + questionId;
+                redisTemplate.opsForValue().set(contextKey, contextValue, TTL_HOURS, TimeUnit.HOURS);
+            }
+
             // Add to queue (sorted set with timestamp)
             String queueKey = QUEUE_PREFIX + "pending";
             redisTemplate.opsForZSet().add(java.util.Objects.requireNonNull(queueKey),
                     java.util.Objects.requireNonNull(executionId), System.currentTimeMillis());
 
-            log.debug("Queued execution {} for student {}", executionId, studentId);
+            log.debug("Queued execution {} for student {} (Context: {}/{})", executionId, studentId, attemptId,
+                    questionId);
 
         } catch (Exception e) {
             log.error("Error queuing execution", e);
@@ -68,13 +79,14 @@ public class ExecutionQueueService {
         return redisTemplate.opsForValue().get(tokenKey);
     }
 
-    /**
-     * Get student ID for an execution
-     */
     public Long getStudentId(String executionId) {
         String studentKey = STUDENT_PREFIX + executionId;
         String studentId = redisTemplate.opsForValue().get(studentKey);
         return studentId != null ? Long.parseLong(studentId) : null;
+    }
+
+    public String getExecutionContext(String executionId) {
+        return redisTemplate.opsForValue().get("execution:context:" + executionId);
     }
 
     /**

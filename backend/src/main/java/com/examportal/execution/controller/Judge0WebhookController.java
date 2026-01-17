@@ -21,11 +21,14 @@ public class Judge0WebhookController {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Judge0WebhookController.class);
     private final RedisTemplate<String, Object> redisTemplate;
     private final ExecutionQueueService executionQueueService;
+    private final com.examportal.repository.StudentAttemptRepository attemptRepository;
 
     public Judge0WebhookController(RedisTemplate<String, Object> redisTemplate,
-            ExecutionQueueService executionQueueService) {
+            ExecutionQueueService executionQueueService,
+            com.examportal.repository.StudentAttemptRepository attemptRepository) {
         this.redisTemplate = redisTemplate;
         this.executionQueueService = executionQueueService;
+        this.attemptRepository = attemptRepository;
     }
 
     /**
@@ -54,6 +57,48 @@ public class Judge0WebhookController {
             if (studentId != null) {
                 String countKey = "execution:count:student:" + studentId;
                 redisTemplate.opsForValue().decrement(countKey);
+            }
+
+            // PERSISTENCE FIX: Update DB Result
+            String context = executionQueueService.getExecutionContext(executionId);
+            if (context != null && context.contains(":")) {
+                try {
+                    String[] parts = context.split(":");
+                    Long attemptId = Long.parseLong(parts[0]);
+                    String questionIdStr = parts[1]; // Store as string in map
+
+                    com.examportal.entity.StudentAttempt attempt = attemptRepository.findById(attemptId).orElse(null);
+                    if (attempt != null) {
+                        // Convert Judge0 response to ExecutionResult (simplified for storage)
+                        // Note: Using a helper or manual builder here to avoid circular dependencies
+                        // Ideally checking Judge0Service for conversion logic would be better, but we
+                        // want to avoid dep cycles.
+                        // Let's rely on the fact that StudentAttempt stores Map<String, Object> and we
+                        // can store the response directly or valid fields.
+                        // But wait, frontend expects ExecutionResult format.
+
+                        // Let's duplicate the minimal conversion logic here to be safe and fast.
+                        com.examportal.execution.model.ExecutionResult result = com.examportal.execution.model.ExecutionResult
+                                .builder()
+                                .executionId(executionId)
+                                .submissionToken(response.getToken())
+                                .status(com.examportal.execution.model.ExecutionResult
+                                        .fromJudge0Status(response.getStatus().getId()))
+                                .output(response.getStdout())
+                                .error(response.getStderr())
+                                .compileOutput(response.getCompile_output())
+                                .passed(response.isAccepted())
+                                // .executedAt(java.time.LocalDateTime.now()) // Optional
+                                .build();
+
+                        attempt.getExecutionResults().put(questionIdStr, result);
+                        attemptRepository.save(attempt);
+                        log.info("Persisted execution result to DB for Attempt {} Question {}", attemptId,
+                                questionIdStr);
+                    }
+                } catch (Exception dbEx) {
+                    log.error("Failed to persist execution result to DB", dbEx);
+                }
             }
 
             log.info("Finished processing callback for {}. Future: Notify student via WebSocket.", executionId);

@@ -17,7 +17,7 @@ export const QuestionParser = {
 
         const lower = constraintString.toLowerCase();
         return {
-            forbidLoops: lower.includes('loop'), // "Ban Loops" or "No Loops"
+            banLoops: lower.includes('loop'), // "Ban Loops" or "No Loops"
             requireRecursion: lower.includes('recursion') // "Require Recursion"
         };
     },
@@ -94,16 +94,16 @@ export const QuestionParser = {
                                 }
 
                                 return {
-                                    type: "CODE", // Standardized type
-                                    title: title,
-                                    description: description,
-                                    constraints_config: constraintsConfig,
+                                    type: "CODING", // Standardized type
+                                    questionText: `**${title}**\n\n${description}`, // Combine Title and Description
+                                    constraints: constraintsConfig,
                                     testCases: testCases,
-                                    allowedLanguages: allowedLanguages.length > 0 ? allowedLanguages : undefined, // Optional in schema
+                                    allowedLanguageIds: allowedLanguages.length > 0 ? allowedLanguages : undefined,
                                     memoryLimit: 1024,
                                     timeLimit: 2,
                                     marks: parseInt(row['Marks']) || 10,
-                                    tempId: Date.now() + Math.random() + index
+                                    tempId: Date.now() + Math.random() + index,
+                                    starterCode: ""
                                 };
                             }
                         });
@@ -196,17 +196,20 @@ export const QuestionParser = {
                 }
 
                 if (titleMatch) {
+                    const title = titleMatch[1].trim();
+                    const desc = descMatch ? descMatch[1].trim() : '';
+
                     return {
                         tempId: Date.now() + Math.random() + index,
                         type: 'CODING',
-                        title: titleMatch[1].trim(),
-                        description: descMatch ? descMatch[1].trim() : '',
-                        constraints_config: QuestionParser.parseConstraints(constraintsMatch ? constraintsMatch[1] : ''),
+                        questionText: `**${title}**\n\n${desc}`, // Combine Title and Description
+                        constraints: QuestionParser.parseConstraints(constraintsMatch ? constraintsMatch[1] : ''),
                         marks: marksMatch ? parseInt(marksMatch[1]) : 10,
-                        allowedLanguages: allowedLanguages,
+                        allowedLanguageIds: allowedLanguages,
                         testCases: testCases,
                         memoryLimit: 1024,
-                        timeLimit: 2
+                        timeLimit: 2,
+                        starterCode: ""
                     };
                 }
             }

@@ -70,7 +70,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                         <Form.Select
                             value={formData.type}
                             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                            className="bg-gray-700 text-white border-gray-600"
+                            className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500"
                         >
                             {allowedTypes.includes('MCQ') && <option value="MCQ">Multiple Choice (MCQ)</option>}
                             {allowedTypes.includes('CODING') && <option value="CODING">Coding Question</option>}
@@ -87,7 +87,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                             rows={3}
                             value={formData.questionText}
                             onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
-                            className="bg-gray-700 text-white border-gray-600"
+                            className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
                         />
                     </Form.Group>
                 </Col>
@@ -101,7 +101,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                             min="1"
                             value={formData.marks}
                             onChange={(e) => setFormData({ ...formData, marks: parseInt(e.target.value) })}
-                            className="bg-gray-700 text-white border-gray-600"
+                            className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
                         />
                     </Form.Group>
                 </Col>
@@ -116,7 +116,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                                     required
                                     value={formData.optionA}
                                     onChange={(e) => setFormData({ ...formData, optionA: e.target.value })}
-                                    className="bg-gray-700 text-white border-gray-600"
+                                    className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
                                 />
                             </Form.Group>
                         </Col>
@@ -128,7 +128,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                                     required
                                     value={formData.optionB}
                                     onChange={(e) => setFormData({ ...formData, optionB: e.target.value })}
-                                    className="bg-gray-700 text-white border-gray-600"
+                                    className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
                                 />
                             </Form.Group>
                         </Col>
@@ -140,7 +140,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                                     required
                                     value={formData.optionC}
                                     onChange={(e) => setFormData({ ...formData, optionC: e.target.value })}
-                                    className="bg-gray-700 text-white border-gray-600"
+                                    className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
                                 />
                             </Form.Group>
                         </Col>
@@ -152,7 +152,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                                     required
                                     value={formData.optionD}
                                     onChange={(e) => setFormData({ ...formData, optionD: e.target.value })}
-                                    className="bg-gray-700 text-white border-gray-600"
+                                    className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400"
                                 />
                             </Form.Group>
                         </Col>
@@ -162,7 +162,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                                 <Form.Select
                                     value={formData.correctOption}
                                     onChange={(e) => setFormData({ ...formData, correctOption: e.target.value })}
-                                    className="bg-gray-700 text-white border-gray-600"
+                                    className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500"
                                 >
                                     <option value="A">A</option>
                                     <option value="B">B</option>
@@ -220,7 +220,7 @@ export default function QuestionForm({ onSubmit, loading, initialData = null, te
                                     rows={5}
                                     value={formData.starterCode}
                                     onChange={(e) => setFormData({ ...formData, starterCode: e.target.value })}
-                                    className="bg-gray-700 text-white border-gray-600 font-monospace"
+                                    className="!bg-gray-700 !text-white !border-gray-600 focus:!bg-gray-700 focus:!text-white focus:!border-blue-500 placeholder-gray-400 font-monospace"
                                 />
                             </Form.Group>
                         </Col>
